@@ -28,9 +28,9 @@ class LogicEditor extends StatelessWidget {
                   this.editorState,
                   key: GlobalKey(),
                   isDraggable: true,
-                  color: Color(Random().nextInt(0xfff00999)),
+                  color: Color(0xff3cc002),
                   type: ["f" , "e" , "s" , "b" ,"n" , "m" , "r", "x"][Random().nextInt(8)],
-                  specs: "this % % kmks % ad % sdghshgk ",
+                  specs: "this % kjshdkjs % hdj ",
                   
                   x: 0,
                   y: 0,

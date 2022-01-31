@@ -1,7 +1,5 @@
-import 'dart:html';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Screens/Editor/logic_editor.dart';
 import 'package:flutter_application_1/Screens/Editor/logic_editor_state.dart';
 import 'package:flutter_application_1/Widgets/block_spec.dart';
 import 'package:flutter_application_1/Widgets/block_base.dart';

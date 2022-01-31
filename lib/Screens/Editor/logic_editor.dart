@@ -22,23 +22,26 @@ class LogicEditor extends StatelessWidget {
    
       child: Row(
         children: [
-          ElevatedButton(
-              onPressed: () {
-                editorState.editorPane.addBlockToStage(Block(
-                  this.editorState,
-                  key: GlobalKey(),
-                  isDraggable: true,
-                  color: Color(0xff3cc002),
-                  type: ["f" , "e" , "s" , "b" ,"n" , "m" , "r", "x"][Random().nextInt(8)],
-                  specs: "this % kjshdkjs % hdj ",
-                  
-                  x: 0,
-                  y: 0,
-                  subAH: 100,
-                  subBH: 0,
-                ));
-              },
-              child: Text("ADD")),
+          Column(
+            children: [
+              ElevatedButton(
+                  onPressed: () {
+                    editorState.editorPane.addBlockToStage(Block(
+                      this.editorState,
+                      key: GlobalKey(),
+                      isDraggable: true,
+                      color: Color(0xff3cc002),
+                      type: ["f" , "e" , "s" , "b" ,"n" , "m" , "r", "x"][Random().nextInt(8)],
+                      specs: "this %b kjshdkjs %n hdj %s ",
+                      
+                      x: 0,
+                      y: 0,
+                     
+                    ));
+                  },
+                  child: Text("ADD")),
+            ],
+          ),
           Expanded(child: InteractiveViewer(child: editorState.editorPane)),
         ],
       ),

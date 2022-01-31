@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Screens/Editor/logic_editor_state.dart';
 import 'package:flutter_application_1/Widgets/block_spec.dart';
@@ -124,12 +123,12 @@ class _BlockState extends State<Block> {
   @override
   void initState() {
     super.initState();
-   
+
     blockSpecs = BlockSize(
       onChange: (size) {
         setState(() {
-           widget.topH = size.height;
-           widget.width = size.width;
+          widget.topH = size.height;
+          widget.width = size.width;
         });
       },
       child: BlockSpec(
@@ -139,10 +138,8 @@ class _BlockState extends State<Block> {
     );
   }
 
- 
   @override
   Widget build(BuildContext context) {
-   
     if (widget.isDraggable) {
       return Positioned(
         left: widget.x,
@@ -179,7 +176,6 @@ class _BlockState extends State<Block> {
                       blockSpecs,
                     ],
                   ),
-                  
                 ],
               ),
             ),
@@ -190,15 +186,16 @@ class _BlockState extends State<Block> {
                   widget.editor.editorPane.addBlockToStage(widget);
                   widget._isVisible = false;
                   widget.width;
-                  if(this.mounted) {
-                     
-                  }
                 });
               }
+
+              widget.onDragStart;
             },
             onDragUpdate: (details) {
               widget.x = details.globalPosition.dx - offsetX;
               widget.y = details.globalPosition.dy - offsetY;
+
+              widget.onDragMove;
             },
             onDragEnd: (details) {
               setState(() {
@@ -206,6 +203,8 @@ class _BlockState extends State<Block> {
                 widget.x;
                 widget.y;
               });
+
+              widget.onDragEnd;
             },
           ),
         ),

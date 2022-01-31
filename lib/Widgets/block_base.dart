@@ -1,16 +1,14 @@
 // ignore_for_file: avoid_print
 
-
 import 'package:flutter/material.dart';
-
 
 class Base extends StatelessWidget {
   String type;
   Color color = Colors.amber;
   double topH;
   double width;
-  double subAH ;
-  double subBH ;
+  double subAH;
+  double subBH;
   late DrawBlock _block;
 
   Base(
@@ -20,25 +18,23 @@ class Base extends StatelessWidget {
       this.width = 80,
       this.color = Colors.amber,
       this.subAH = 20,
-      this.subBH = 20
-}): super(key: key) {
-
-  this._block = DrawBlock(
-                blockColor: color,
-                type: type,
-                width: (width >= 80) ? width : 80,
-                topH: (topH >= 20) ? topH : 20,
-                substack1Height: (subAH >= 10) ? subAH : 10,
-                substack2Height: (subBH >= 10) ? subBH : 10);
-}
+      this.subBH = 20})
+      : super(key: key) {
+    this._block = DrawBlock(
+        blockColor: color,
+        type: type,
+        width: (width >= 80) ? width : 80,
+        topH: (topH >= 20) ? topH : 20,
+        substack1Height: (subAH >= 10) ? subAH : 10,
+        substack2Height: (subBH >= 10) ? subBH : 10);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height : _block.getTotalHeight(),
+      height: _block.getTotalHeight(),
       width: _block.getWidth(),
-      child: CustomPaint(
-          painter: _block ),
+      child: CustomPaint(painter: _block),
     );
   }
 }
@@ -68,7 +64,7 @@ class DrawBlock extends CustomPainter {
   // ignore: non_constant_identifier_names
   double MIN_HEIGHT = 16;
 
-  Color blockColor ;
+  Color blockColor;
   String? type = "s";
 
   Paint mPaint = Paint();
@@ -79,24 +75,20 @@ class DrawBlock extends CustomPainter {
   double embossIntensity = 0.5;
 
   double width;
-  double topH ;
+  double topH;
 
   //substack
   double substack1Height;
   double substack2Height = 20;
 
-  DrawBlock(
-      { 
-        
+  DrawBlock({
     this.blockColor = Colors.amber,
-    this.type ,
-    this.width  = 10 ,
+    this.type,
+    this.width = 10,
     this.topH = 10,
-    this.substack1Height  = 20,
+    this.substack1Height = 20,
     this.substack2Height = 20,
-      
-      }) {
-
+  }) {
     MIN_WIDTH = (4 * EDGE_INSET) + TOP_OUTSET_LENGTH + NOTCH_LENGTH;
     MIN_HEIGHT = 2 * EDGE_INSET + 10;
 
@@ -162,7 +154,6 @@ class DrawBlock extends CustomPainter {
         drawRightAndBottom(canvas);
         drawSubstackA(canvas);
         drawSubstackB(canvas);
-        drawTopEmboss(canvas);
 
         drawTopEmboss(canvas);
         drawRightAndBottomEmboss(canvas);
@@ -174,6 +165,7 @@ class DrawBlock extends CustomPainter {
         drawTop(canvas);
         drawRightAndBottom(canvas);
         drawSubstackA(canvas);
+
         drawTopEmboss(canvas);
         drawRightAndBottomEmboss(canvas);
         drawSubstackAEmboss(canvas);
@@ -187,6 +179,9 @@ class DrawBlock extends CustomPainter {
       case "x": //ending
         drawTop(canvas);
         drawRightAndBottom(canvas);
+
+        drawTopEmboss(canvas);
+        drawRightAndBottomEmboss(canvas);
         break;
       default: //regular
         drawString(canvas);
@@ -251,17 +246,21 @@ class DrawBlock extends CustomPainter {
   }
 
   void drawTop(Canvas canvas) {
-    Path path = Path();
-    path.moveTo(0, EDGE_INSET);
-    path.lineTo(EDGE_INSET, 0);
-    path.lineTo(EDGE_INSET + TOP_OUTSET_LENGTH, 0);
+    Path path1 = Path();
+    path1.moveTo(0, EDGE_INSET + embossIntensity);
+    path1.lineTo(EDGE_INSET, 0 + embossIntensity);
+    path1.lineTo(
+        EDGE_INSET + TOP_OUTSET_LENGTH + embossIntensity, 0 + embossIntensity);
     double leftX = EDGE_INSET + TOP_OUTSET_LENGTH + EDGE_INSET;
-    path.lineTo(leftX, EDGE_INSET);
-    path.lineTo(leftX + NOTCH_LENGTH, EDGE_INSET);
-    path.lineTo(leftX + NOTCH_LENGTH + EDGE_INSET, 0);
-    path.lineTo(width - EDGE_INSET, 0);
-    path.lineTo(width, EDGE_INSET);
-    canvas.drawPath(path, mPaint);
+    path1.lineTo(leftX + embossIntensity, EDGE_INSET + embossIntensity);
+
+    path1.lineTo(
+        leftX + NOTCH_LENGTH + embossIntensity, EDGE_INSET + embossIntensity);
+    path1.lineTo(leftX + NOTCH_LENGTH + EDGE_INSET, 0 + embossIntensity);
+    path1.lineTo(width - EDGE_INSET - embossIntensity, 0 + embossIntensity);
+    path1.lineTo(width, EDGE_INSET + embossIntensity);
+
+    canvas.drawPath(path1, mPaint);
   }
 
   void drawRightAndBottom(Canvas canvas) {
@@ -359,7 +358,7 @@ class DrawBlock extends CustomPainter {
   void drawSubstackB(Canvas canvas) {
     Path path = Path();
     double leftX = TOP_OUTSET_LENGTH + SUBSTACK_INSET;
-    double subBH = topH + substack2Height + (3 * EDGE_INSET) + 10;
+    double subBH = topH + substack1Height + (3 * EDGE_INSET) + 10;
     path.moveTo(SUBSTACK_INSET, subBH);
     path.lineTo(SUBSTACK_INSET, subBH + substack2Height);
     path.lineTo(
@@ -465,7 +464,8 @@ class DrawBlock extends CustomPainter {
         leftX + NOTCH_LENGTH + embossIntensity, EDGE_INSET + embossIntensity);
     path1.lineTo(leftX + NOTCH_LENGTH + EDGE_INSET, 0 + embossIntensity);
     path1.lineTo(width - EDGE_INSET - embossIntensity, 0 + embossIntensity);
-    path1.lineTo(width - embossIntensity, EDGE_INSET + embossIntensity);
+    //path1.lineTo(width, EDGE_INSET + embossIntensity);
+
     canvas.drawPath(path1, embossL);
   }
 
@@ -503,7 +503,7 @@ class DrawBlock extends CustomPainter {
       path.lineTo(SUBSTACK_INSET - embossIntensity,
           topH + EDGE_INSET - embossIntensity);
       // path.lineTo(0 - embossIntensity, topH + EDGE_INSET - embossIntensity);
-      // path.lineTo(0 - embossIntensity, EDGE_INSET - embossIntensity);
+      //path.lineTo(0 - embossIntensity, EDGE_INSET - embossIntensity);
     } else if (type == "x") {
       path.lineTo(EDGE_INSET - embossIntensity, topH - embossIntensity);
       path.lineTo(0 - embossIntensity, topH - EDGE_INSET - embossIntensity);
@@ -589,7 +589,7 @@ class DrawBlock extends CustomPainter {
     Path path = Path();
     Path path1 = Path();
     double leftX = TOP_OUTSET_LENGTH + SUBSTACK_INSET;
-    double subBH = topH + substack2Height + (3 * EDGE_INSET) + 10;
+    double subBH = topH + substack1Height + (3 * EDGE_INSET) + 10;
     path1.moveTo(
         SUBSTACK_INSET + embossIntensity, EDGE_INSET + subBH + embossIntensity);
     path1.lineTo(SUBSTACK_INSET + embossIntensity,

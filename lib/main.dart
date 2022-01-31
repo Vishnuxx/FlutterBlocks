@@ -22,7 +22,7 @@ class _MyAppState extends State<MyApp> {
             // appBar: AppBar(
             //   title: const Text("blocks"),
             // ),
-            body: const LogicEditor())
+            body:  LogicEditor())
     );
   }
 }

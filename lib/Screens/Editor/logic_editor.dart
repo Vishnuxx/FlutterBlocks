@@ -1,27 +1,47 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/Screens/Editor/editorpane.dart';
+import 'package:flutter_application_1/Screens/Editor/logic_editor_state.dart';
 import 'package:flutter_application_1/Widgets/block.dart';
 
 class LogicEditor extends StatelessWidget {
-  const LogicEditor({Key? key}) : super(key: key);
+  late LogicEditorState editorState;
+
+  LogicEditor({Key? key}) : super(key: key) {
+    editorState = LogicEditorState();
+    editorState.editorPane = EditorPane(
+      editor: editorState,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.topLeft,
-      color: Colors.white,
-      child: Stack(children: [
-   Block(isDraggable: true, color: Colors.amber , type: "f" , topH: 20 , width: 80, x: 200 , y: 300, subAH: 0, subBH: 100, ) ,
-    Block(
-          isDraggable: true,
-          color: Colors.blueAccent,
-          type: "f",
-          topH: 20,
-          width: 80,
-          x: 200,
-          y: 300,
-          subAH: 0,
-          subBH: 100,
-        ),        ]),
+   
+      child: Row(
+        children: [
+          ElevatedButton(
+              onPressed: () {
+                editorState.editorPane.addBlockToStage(Block(
+                  this.editorState,
+                  key: GlobalKey(),
+                  isDraggable: true,
+                  color: Color(Random().nextInt(0xfff00999)),
+                  type: ["f" , "e" , "s" , "b" ,"n" , "m" , "r", "x"][Random().nextInt(8)],
+                  specs: "this % % kmks % ad % sdghshgk ",
+                  
+                  x: 0,
+                  y: 0,
+                  subAH: 100,
+                  subBH: 0,
+                ));
+              },
+              child: Text("ADD")),
+          Expanded(child: InteractiveViewer(child: editorState.editorPane)),
+        ],
+      ),
     );
   }
 }

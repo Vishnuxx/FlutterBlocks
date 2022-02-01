@@ -13,6 +13,7 @@ class BlockSpec extends StatelessWidget {
             BlockArg(key: GlobalKey(), type: token[1], height: 20, width: 35));
       } else {
         params.add(Padding(
+          
           padding: const EdgeInsets.all(4.0),
           child: Text(
             token,
@@ -42,6 +43,6 @@ class BlockSpec extends StatelessWidget {
         ],
       ),
     );
-    ;
+    
   }
 }

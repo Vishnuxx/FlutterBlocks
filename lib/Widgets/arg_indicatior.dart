@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/Screens/Editor/editorpane.dart';
 import 'package:flutter_application_1/Screens/Editor/logic_editor.dart';
 import 'package:flutter_application_1/Widgets/block.dart';
 import 'package:flutter_application_1/Widgets/block_args.dart';
+import 'package:flutter_application_1/Widgets/block_base.dart';
 import 'package:flutter_application_1/Widgets/bounds.dart';
+import 'package:flutter_application_1/Widgets/draw_block.dart';
 
 class ArgIndicator extends StatefulWidget {
   _ArgIndicatorState _state = _ArgIndicatorState();
@@ -15,7 +18,7 @@ class ArgIndicator extends StatefulWidget {
 
   ArgIndicator(
       {Key? key,
-      this.isVisible = true,
+      this.isVisible = false,
       this.type = "s",
       this.height = 20,
       this.width = 30})
@@ -33,19 +36,23 @@ class ArgIndicator extends StatefulWidget {
   }
 
   void indicateArg(BlockArg? arg) {
-    RenderBox? box2 =
-        (arg?.key as GlobalKey).currentContext?.findRenderObject() as RenderBox;
+   
 
     if (arg != null) {
+      RenderBox box2;
+      box2 = (arg.key as GlobalKey).currentContext?.findRenderObject()
+          as RenderBox;
       final size2 = box2.size;
-      final pos = box2.localToGlobal(Offset.zero);
-      print(pos);
-      _state.setState(() {
-        x = pos.dy;
-        y = pos.dx;
+      final pos = EditorPane.toRelativeOffset(box2.localToGlobal(Offset.zero));
 
+      //print(pos);
+      _state.setState(() {
+        x = pos.dx;
+        y = pos.dy;
         width = size2.width;
         height = size2.height;
+
+        type = arg.type!;
 
         isVisible = true;
       });
@@ -57,7 +64,6 @@ class ArgIndicator extends StatefulWidget {
         y = 0;
       });
     }
-    return;
   }
 
   @override
@@ -72,8 +78,7 @@ class _ArgIndicatorState extends State<ArgIndicator> {
       top: widget.y,
       child: Visibility(
         visible: widget.isVisible,
-        child: Container(
-            width: widget.width, height: widget.height, color: Colors.black),
+        child: CustomPaint(painter: DrawBlock(blockColor: Colors.black , width: widget.width , topH: widget.height , type: widget.type),),
       ),
     );
   }

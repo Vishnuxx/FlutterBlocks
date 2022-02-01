@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Screens/Editor/logic_editor_state.dart';
+import 'package:flutter_application_1/Screens/Editor/editorpane.dart';
+import 'package:flutter_application_1/Screens/Editor/logic_editor.dart';
+import 'package:flutter_application_1/Screens/Editor/logic_editor_data.dart';
 import 'package:flutter_application_1/Widgets/arg_indicatior.dart';
 import 'package:flutter_application_1/Widgets/block_args.dart';
 import 'package:flutter_application_1/Widgets/block_spec.dart';
@@ -13,12 +15,12 @@ class Block extends StatefulWidget implements BlockMethods {
   final Color color;
   final bool isDraggable;
   final bool isFromPallette;
-  Function(TapDownDetails)? onTap;
-  Function(bool)? onDragStart;
-  Function(DragUpdateDetails, bool)? onDragMove;
-  Function(DraggableDetails, bool)? onDragEnd;
+  Function(Block b, TapDownDetails)? onTap;
+  Function(Block b, bool)? onDragStart;
+  Function(Block b, Offset, bool)? onDragMove;
+  Function(Block b, Offset, bool)? onDragEnd;
 
-  bool _isVisible = true;
+  bool isVisible = true;
   late BlockSpec _blockSpec;
   double topH;
   double width;
@@ -33,7 +35,7 @@ class Block extends StatefulWidget implements BlockMethods {
   Block? _previous;
   Block? _substackA;
 
-  LogicEditorState editor;
+  LogicEditorData editor;
 
   Block(this.editor,
       {Key? key,
@@ -56,7 +58,7 @@ class Block extends StatefulWidget implements BlockMethods {
 
   void update() {
     _state.setState(() {
-      _isVisible = _isVisible;
+      isVisible = isVisible;
       _blockSpec = _blockSpec;
       x = x;
       y = y;
@@ -70,7 +72,7 @@ class Block extends StatefulWidget implements BlockMethods {
   @override
   void setVisibility(bool visible) {
     _state.setState(() {
-      _isVisible = visible;
+      isVisible = visible;
     });
   }
 
@@ -185,7 +187,8 @@ class _BlockState extends State<Block> {
   late Base _base;
   late double offsetX = 0;
   late double offsetY = 0;
-
+  late Offset pointer = Offset(0, 0);
+  bool isTriggered = false;
   var k = GlobalKey();
   @override
   void initState() {
@@ -197,33 +200,10 @@ class _BlockState extends State<Block> {
     );
   }
 
-  // used to find block args from editor
-  void findBlockArgs(DragUpdateDetails details) {
-    for (Block b in widget.editor.blocks) {
-      if (b._isVisible) {
-        Offset off = Offset(details.globalPosition.dx - offsetX,
-            details.globalPosition.dy - offsetY);
-        if (b.isHitting(off)) {
-          BlockArg? arg = b.getArgAtLocation(off);
-
-          if (arg != null && widget.isArgBlock()) {
-            widget.editor.indicator?.indicateArg(arg);
-            widget.editor.indicator?.updateIndicator();
-            // if (arg.canAcceptBlockOfType(widget.type)) {
-            setState(() {
-              arg.trigger();
-            });
-            // }
-          }
-        }
-      }
-    }
-  }
-
   Widget dragFeedback() {
     return Base(
       type: widget.type,
-      topH: 20,
+      topH: 30,
       width: 80,
       color: Colors.black26,
     );
@@ -236,7 +216,7 @@ class _BlockState extends State<Block> {
         left: widget.x,
         top: widget.y,
         child: Visibility(
-          visible: widget._isVisible,
+          visible: widget.isVisible,
           maintainState: true,
           child: Draggable(
             feedback: dragFeedback(),
@@ -244,6 +224,7 @@ class _BlockState extends State<Block> {
               onTapDown: (details) {
                 offsetX = details.localPosition.dx;
                 offsetY = details.localPosition.dy;
+                isTriggered = true;
               },
               child: Wrap(
                 children: [
@@ -271,26 +252,29 @@ class _BlockState extends State<Block> {
               ),
             ),
             onDragStarted: () {
-              if (!widget.isFromPallette) {
-                widget.editor.blocks.remove(widget);
-                widget.editor.editorPane.addBlockToStage(widget);
-                widget.setVisibility(false);
+              if (isTriggered) {
+                widget.onDragStart!(widget, widget.isFromPallette);
               }
-              widget.onDragStart!(widget.isFromPallette);
             },
             onDragUpdate: (details) {
-              widget.x = details.globalPosition.dx - offsetX;
-              widget.y = details.globalPosition.dy - offsetY;
-
-              widget.onDragMove!(details, widget.isFromPallette);
-
-              findBlockArgs(details);
+              if (isTriggered) {
+                pointer = EditorPane.toRelativeOffset(Offset(details.globalPosition.dx - offsetX, details.globalPosition.dy - offsetY));
+                widget.x = pointer.dx;
+                widget.y = pointer.dy;
+                widget.editor.editorPane
+                    .findBlockArgs(widget, Offset(details.globalPosition.dx - offsetX,
+                        details.globalPosition.dy - offsetY));
+                widget.onDragMove!(
+                    widget, pointer , widget.isFromPallette);
+              }
             },
             onDragEnd: (details) {
-              widget._isVisible = true;
-              widget.update();
+              isTriggered = false;
+              widget.isVisible = true;
 
-              widget.onDragEnd!(details, widget.isFromPallette);
+              widget.onDragEnd!(widget, pointer, widget.isFromPallette);
+              widget.update();
+              
             },
           ),
         ),
@@ -300,7 +284,7 @@ class _BlockState extends State<Block> {
           left: widget.x,
           top: widget.y,
           child: Visibility(
-            visible: widget._isVisible,
+            visible: widget.isVisible,
             maintainState: true,
             child: Wrap(
               children: [

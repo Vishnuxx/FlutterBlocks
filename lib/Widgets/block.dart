@@ -199,7 +199,7 @@ class _BlockState extends State<Block> {
       visible: widget.isVisible,
       maintainState: true,
       child: Draggable(
-        feedback: (widget.isDraggable)
+        feedback: (isTriggered && widget.isDraggable)
             ? dragFeedback()
             : const SizedBox(width: 0, height: 0),
         onDragStarted: () {
@@ -207,6 +207,7 @@ class _BlockState extends State<Block> {
             setState(() {
               widget.isVisible = (widget.isFromPallette) ? true : false;
               widget.onDragStart!(widget);
+               
             });
             print("start");
           }
@@ -234,9 +235,11 @@ class _BlockState extends State<Block> {
         },
         child: GestureDetector(
           onTapDown: (details) {
-            widget.offsetX = details.localPosition.dx;
-            widget.offsetY = details.localPosition.dy;
-            isTriggered = true;
+            setState(() {
+              widget.offsetX = details.localPosition.dx;
+              widget.offsetY = details.localPosition.dy;
+              isTriggered = true;
+            });
           },
           child: Stack(
             children: [

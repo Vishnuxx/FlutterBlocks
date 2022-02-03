@@ -1,14 +1,13 @@
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Screens/Editor/editorpane.dart';
-import 'package:flutter_application_1/Screens/Editor/logic_editor.dart';
-import 'package:flutter_application_1/Widgets/block.dart';
 import 'package:flutter_application_1/Widgets/block_args.dart';
-import 'package:flutter_application_1/Widgets/block_base.dart';
-import 'package:flutter_application_1/Widgets/bounds.dart';
 import 'package:flutter_application_1/Widgets/draw_block.dart';
 
+// ignore: must_be_immutable
 class ArgIndicator extends StatefulWidget {
-  _ArgIndicatorState _state = _ArgIndicatorState();
+  final _ArgIndicatorState _state = _ArgIndicatorState();
   bool isVisible;
   String type;
   double width;
@@ -24,7 +23,9 @@ class ArgIndicator extends StatefulWidget {
       this.width = 30})
       : super(key: key);
 
+  // ignore: duplicate_ignore
   void updateIndicator() {
+    
     _state.setState(() {
       type = type;
       width = width;
@@ -67,6 +68,7 @@ class ArgIndicator extends StatefulWidget {
   }
 
   @override
+  // ignore: no_logic_in_create_state
   State<ArgIndicator> createState() => _state;
 }
 

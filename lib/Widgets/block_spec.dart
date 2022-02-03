@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Widgets/block_args.dart';
 
+// ignore: must_be_immutable
 class BlockSpec extends StatelessWidget {
   String? args;
   List<Widget> params = [];
@@ -17,7 +18,7 @@ class BlockSpec extends StatelessWidget {
           padding: const EdgeInsets.all(4.0),
           child: Text(
             token,
-            style: TextStyle(
+            style: const TextStyle(
                 color: Colors.white70,
                 fontWeight: FontWeight.bold,
                 fontSize: 14),
@@ -33,12 +34,11 @@ class BlockSpec extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(2.0),
-      child: Wrap(
+      child:  Wrap(
         children: [
-          Center(
-            child: Row(
-              children: generateParams(),
-            ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: generateParams(),
           )
         ],
       ),

@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/Screens/Editor/editorpane.dart';
 import 'package:flutter_application_1/Widgets/block.dart';
 import 'package:flutter_application_1/Widgets/block_size.dart';
 import 'package:flutter_application_1/Widgets/draw_block.dart';
+import 'package:flutter_application_1/Widgets/droppable_regions.dart';
 
-class BlockArg extends StatefulWidget {
-  _BlockArgState _state = _BlockArgState();
-   Color? color = Colors.black26;
+// ignore: must_be_immutable
+class BlockArg extends StatefulWidget implements DroppableRegion {
+  final _BlockArgState _state = _BlockArgState();
+  Color? color = Colors.black26;
   Block? _child;
-  bool _trigger = false;
+  final bool _trigger = false;
 
-  String? type ;
-  double? width ;
+  String? type;
+  double? width;
   double? height;
 
   BlockArg({
@@ -20,34 +23,31 @@ class BlockArg extends StatefulWidget {
     this.height = 20,
   }) : super(key: key);
 
-  
-
-  void addChildBlock(Block child) {
-    _child = child;
+  @override //add
+  void addBlock(Block block) {
+    if (canAcceptBlockOfType(block.type)) {
+      // ignore: invalid_use_of_protected_member
+      _state.setState(() {
+        _child = block;
+      });
+    }
   }
 
-  Block? getChildBlock() {
-    return _child;
+  @override //remove
+  void removeBlock(Block block) {
+    // ignore: invalid_use_of_protected_member
+    _state.setState(() {
+      _child = null;
+    });
   }
 
+  // returns true if it has block inside it
   bool hasChildBlock() {
     return _child != null;
   }
 
-  //returns true when hit happens
-  bool isHitting(Offset coordinate) {
-    RenderBox box2 = (key as GlobalKey)
-        .currentContext
-        ?.findRenderObject() as RenderBox;
-
-    final size2 = Size(30 , 20);
-    final pos = box2.localToGlobal(Offset.zero);
-    final collide = coordinate.dx > pos.dx &&
-        coordinate.dx < (pos.dx + size2.width) &&
-        coordinate.dy > pos.dy &&
-        coordinate.dy < (pos.dy + size2.height);
-
-    return collide;
+  Block? getChildBlock() {
+    return _child;
   }
 
   // returns true if the draggable and the arg hooder are of same type
@@ -55,28 +55,14 @@ class BlockArg extends StatefulWidget {
     return type == _type;
   }
 
-
-// DRBUG
-  void trigger() {
-    _state.setState(() {
-       _trigger = true;
-    });
-   
-  }
-//Debug
-  void untrigger() {
-    _state.setState(() {
-      _trigger = false;
-    });
-  }
-
+ 
 
   @override
+  // ignore: no_logic_in_create_state
   State<BlockArg> createState() => _state;
 }
 
 class _BlockArgState extends State<BlockArg> {
- 
   String _argType(String type) {
     String t = "s";
     switch (type) {
@@ -96,15 +82,15 @@ class _BlockArgState extends State<BlockArg> {
         onChange: (size) {
           widget.width = size.width;
         },
-        child: Container(
-          
+        child: SizedBox(
           width: widget.width,
           height: widget.height,
           child: Stack(
             children: [
               CustomPaint(
                   painter: DrawBlock(
-                      blockColor: (widget._trigger)? Colors.red : widget.color! ,
+                      blockColor:
+                          (widget._trigger) ? Colors.red : widget.color!,
                       type: _argType(widget.type!),
                       width: widget.width!,
                       topH: widget.height!)),

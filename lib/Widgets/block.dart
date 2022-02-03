@@ -1,41 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Screens/Editor/editorpane.dart';
 import 'package:flutter_application_1/Screens/Editor/logic_editor.dart';
-import 'package:flutter_application_1/Screens/Editor/logic_editor_data.dart';
-import 'package:flutter_application_1/Widgets/arg_indicatior.dart';
+
 import 'package:flutter_application_1/Widgets/block_args.dart';
 import 'package:flutter_application_1/Widgets/block_spec.dart';
 import 'package:flutter_application_1/Widgets/block_base.dart';
 import 'package:flutter_application_1/Widgets/block_methods.dart';
 import 'package:flutter_application_1/Widgets/block_size.dart';
 
+// ignore: must_be_immutable
 class Block extends StatefulWidget implements BlockMethods {
-  _BlockState _state = _BlockState();
+  final _BlockState _state = _BlockState();
   final String type;
-  final Color color;
+  Color color;
   final bool isDraggable;
   final bool isFromPallette;
-  Function(Block b, TapDownDetails)? onTap;
-  Function(Block b, bool)? onDragStart;
-  Function(Block b, Offset, bool)? onDragMove;
-  Function(Block b, Offset, bool)? onDragEnd;
+  Function(Block b, TapDownDetails offset)? onTap;
+  void Function(Block b)? onDragStart;
+  void Function(Block b, Offset pointer)? onDragMove;
+  void Function(Block b, Offset pointer)? onDragEnd;
 
-  bool isVisible = true;
-  late BlockSpec _blockSpec;
+  final String specs;
   double topH;
   double width;
   double? x = 0;
   double? y = 0;
   double subAH;
   double subBH;
-  String specs;
+
+  double offsetX = 0; //local touch offset X
+  double offsetY = 0; //local touch offset Y
 
   Block? _parent;
   Block? _next;
   Block? _previous;
-  Block? _substackA;
+  bool isVisible = true;
+  late BlockSpec _blockSpec; // specs hold iside here
 
-  LogicEditorData editor;
+  LogicEditor editor;
 
   Block(this.editor,
       {Key? key,
@@ -57,6 +59,7 @@ class Block extends StatefulWidget implements BlockMethods {
       : super(key: key);
 
   void update() {
+    // ignore: invalid_use_of_protected_member
     _state.setState(() {
       isVisible = isVisible;
       _blockSpec = _blockSpec;
@@ -69,14 +72,22 @@ class Block extends StatefulWidget implements BlockMethods {
     });
   }
 
+  setColor(Color _color) {
+    _state.setState(() {
+      color = _color;
+    });
+  }
+
   @override
   void setVisibility(bool visible) {
+    // ignore: invalid_use_of_protected_member
     _state.setState(() {
       isVisible = visible;
     });
   }
 
   @override
+  // ignore: no_logic_in_create_state
   State<Block> createState() => _state;
 
   @override
@@ -110,24 +121,20 @@ class Block extends StatefulWidget implements BlockMethods {
   }
 
   @override
-  Block? getSubstackA() {
-    // TODO: implement getSubstackA
-    throw UnimplementedError();
-  }
+  Block? getSubstackA() => throw UnimplementedError();
 
   @override
-  Block? getSubstackB() {
-    // TODO: implement getSubstackB
-    throw UnimplementedError();
-  }
+  Block? getSubstackB() => throw UnimplementedError();
 
   @override
   void substackA(Block subA) {
+    // ignore: todo
     // TODO: implement substackA
   }
 
   @override
   void substackB(Block subB) {
+    // ignore: todo
     // TODO: implement substackB
   }
 
@@ -140,19 +147,16 @@ class Block extends StatefulWidget implements BlockMethods {
         type == "d";
   }
 
-  @override
+  @override //returns the blockarg of at a pointer location
   BlockArg? getArgAtLocation(Offset location) {
     BlockArg? target;
     for (Widget arg in _blockSpec.params) {
-      if (arg.runtimeType == BlockArg) {
-        //print("this is a" + arg.runtimeType.toString());
-        if ((arg as BlockArg).isHitting(location)) {
-          if ((arg as BlockArg).hasChildBlock()) {
-            // target = ((arg as BlockArg)
-            //             .getChildBlock()!
-            //             .getArgAtLocation(location) !=
-            //         null)
-            //     ? (arg as BlockArg).getChildBlock()!.getArgAtLocation(location)
+      if (arg is BlockArg) {
+        if (EditorPane.isHitting((arg as BlockArg) , location)) {
+          print("this is a" + arg.runtimeType.toString());
+          if ((arg).hasChildBlock()) {
+            // target = ((arg).getChildBlock()!.getArgAtLocation(location) != null)
+            //     ? (arg).getChildBlock()!.getArgAtLocation(location)
             //     : arg;
             target = arg;
           } else {
@@ -166,36 +170,17 @@ class Block extends StatefulWidget implements BlockMethods {
     }
     return target;
   }
-
-  @override
-  bool isHitting(Offset coordinate) {
-    RenderBox box2 =
-        (this.key as GlobalKey).currentContext?.findRenderObject() as RenderBox;
-
-    final size2 = box2.size;
-    final pos = box2.localToGlobal(Offset.zero);
-    final collide = coordinate.dx > pos.dx &&
-        coordinate.dx < (pos.dx + size2.width) &&
-        coordinate.dy > pos.dy &&
-        coordinate.dy < (pos.dy + size2.height);
-
-    return collide;
-  }
 }
 
 class _BlockState extends State<Block> {
-  late Base _base;
-  late double offsetX = 0;
-  late double offsetY = 0;
-  late Offset pointer = Offset(0, 0);
+  late Offset pointer = const Offset(0, 0);
   bool isTriggered = false;
-  var k = GlobalKey();
+
   @override
   void initState() {
     super.initState();
-
+    //print("initstte");
     widget._blockSpec = BlockSpec(
-      key: k,
       args: widget.specs,
     );
   }
@@ -209,108 +194,116 @@ class _BlockState extends State<Block> {
     );
   }
 
+  Widget mBlock() {
+    return Visibility(
+      visible: widget.isVisible,
+      maintainState: true,
+      child: Draggable(
+        feedback: (widget.isDraggable)
+            ? dragFeedback()
+            : const SizedBox(width: 0, height: 0),
+        onDragStarted: () {
+          if (isTriggered) {
+            setState(() {
+              widget.isVisible = (widget.isFromPallette) ? true : false;
+              widget.onDragStart!(widget);
+            });
+            print("start");
+          }
+        },
+        onDragUpdate: (details) {
+          setState(() {
+            if (isTriggered) {
+              pointer = EditorPane.toRelativeOffset(Offset(
+                  details.globalPosition.dx - widget.offsetX,
+                  details.globalPosition.dy - widget.offsetY));
+              widget.x = pointer.dx;
+              widget.y = pointer.dy;
+              widget.onDragMove!(widget, pointer);
+            }
+          });
+        },
+        onDragEnd: (details) {
+          if (isTriggered) {
+            setState(() {
+              widget.isVisible = true;
+              widget.onDragEnd!(widget, pointer);
+            });
+          }
+          isTriggered = false;
+        },
+        child: GestureDetector(
+          onTapDown: (details) {
+            widget.offsetX = details.localPosition.dx;
+            widget.offsetY = details.localPosition.dy;
+            isTriggered = true;
+          },
+          child: Stack(
+            children: [
+              Base(
+                type: widget.type,
+                topH: widget.topH,
+                width: widget.width,
+                color: widget.color,
+                subAH: widget.subAH,
+                subBH: widget.subBH,
+              ),
+              BlockSize(
+                  onChange: (size) {
+                    setState(() {
+                      widget.topH = size.height;
+                      widget.width = size.width;
+                    });
+                  },
+                  child: widget._blockSpec),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.isDraggable) {
-      return Positioned(
-        left: widget.x,
-        top: widget.y,
-        child: Visibility(
-          visible: widget.isVisible,
-          maintainState: true,
-          child: Draggable(
-            feedback: dragFeedback(),
-            child: GestureDetector(
-              onTapDown: (details) {
-                offsetX = details.localPosition.dx;
-                offsetY = details.localPosition.dy;
-                isTriggered = true;
-              },
-              child: Wrap(
-                children: [
-                  Stack(
-                    children: [
-                      Base(
-                        type: widget.type,
-                        topH: widget.topH,
-                        width: widget.width,
-                        color: widget.color,
-                        subAH: widget.subAH,
-                        subBH: widget.subBH,
-                      ),
-                      BlockSize(
-                          onChange: (size) {
-                            setState(() {
-                              widget.topH = size.height;
-                              widget.width = size.width;
-                            });
-                          },
-                          child: widget._blockSpec),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            onDragStarted: () {
-              if (isTriggered) {
-                widget.onDragStart!(widget, widget.isFromPallette);
-              }
-            },
-            onDragUpdate: (details) {
-              if (isTriggered) {
-                pointer = EditorPane.toRelativeOffset(Offset(details.globalPosition.dx - offsetX, details.globalPosition.dy - offsetY));
-                widget.x = pointer.dx;
-                widget.y = pointer.dy;
-                widget.editor.editorPane
-                    .findBlockArgs(widget, Offset(details.globalPosition.dx - offsetX,
-                        details.globalPosition.dy - offsetY));
-                widget.onDragMove!(
-                    widget, pointer , widget.isFromPallette);
-              }
-            },
-            onDragEnd: (details) {
-              isTriggered = false;
-              widget.isVisible = true;
-
-              widget.onDragEnd!(widget, pointer, widget.isFromPallette);
-              widget.update();
-              
-            },
-          ),
-        ),
-      );
+      if (widget.isFromPallette) {
+        // ____________IS FROM PALLETTE____________
+        return mBlock();
+      } else {
+        //_______IS NOT FROM PALLETTE___________
+        return Positioned(left: widget.x, top: widget.y, child: mBlock());
+      }
     } else {
-      return Positioned(
-          left: widget.x,
-          top: widget.y,
-          child: Visibility(
-            visible: widget.isVisible,
-            maintainState: true,
-            child: Wrap(
+      // _____________IS NOT DRAGGABLE_____________
+      return Visibility(
+        visible: widget.isVisible,
+        maintainState: true,
+        child: Wrap(
+          children: [
+            Stack(
+              fit: StackFit.passthrough,
               children: [
-                Stack(
-                  children: [
-                    Base(
-                      type: widget.type,
-                      topH: widget.topH,
-                      width: widget.width,
-                      color: widget.color,
-                      subAH: widget.subAH,
-                      subBH: widget.subBH,
-                    ),
-                    BlockSize(
-                        onChange: (size) {
-                          setState(() {
-                            widget.topH = size.height;
-                            widget.width = size.width;
-                          });
-                        },
-                        child: widget._blockSpec),
-                  ],
+                Base(
+                  type: widget.type,
+                  topH: widget.topH,
+                  width: widget.width,
+                  color: widget.color,
+                  subAH: widget.subAH,
+                  subBH: widget.subBH,
                 ),
+                BlockSize(
+                    onChange: (size) {
+                      setState(() {
+                        widget.topH = size.height;
+                        widget.width = size.width;
+                      });
+                    },
+                    child: widget._blockSpec),
               ],
             ),
-          ));
+          ],
+        ),
+      );
     }
   }
 }

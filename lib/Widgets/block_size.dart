@@ -5,7 +5,7 @@ class BlockSize extends StatefulWidget {
   final Widget child;
   final Function(Size size) onChange;
 
-   BlockSize({
+   const BlockSize({
     Key? key,
     required this.onChange,
     required this.child,
@@ -26,6 +26,7 @@ class _BlockSizeState extends State<BlockSize> {
   }
 
   var widgetKey = GlobalKey();
+  // ignore: prefer_typing_uninitialized_variables
   var oldSize;
 
   void postFrameCallback(_) {

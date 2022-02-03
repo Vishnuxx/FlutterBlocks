@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Bounds {
-  static BuildContext? _rootcontext;
   static void setRootContext(BuildContext context) {
-    Bounds._rootcontext = context;
   }
 
   double rootX(double x) {

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Widgets/draw_block.dart';
 
+// ignore: must_be_immutable
 class Base extends StatelessWidget {
   String type;
   Color color = Colors.amber;
@@ -21,7 +22,7 @@ class Base extends StatelessWidget {
       this.subAH = 20,
       this.subBH = 20})
       : super(key: key) {
-    this._block = DrawBlock(
+    _block = DrawBlock(
       showEmboss: true,
         blockColor: color,
         type: type,

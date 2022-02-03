@@ -15,6 +15,7 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
   List<Block> blocks = [];
   List<Widget> helpers = [];
   ArgIndicator? indicator;
+  Widget? currentDropZone; //returns the current drop zone
 
   EditorPane({Key? key, this.editor, this.width, this.height})
       : super(key: key);
@@ -59,7 +60,7 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
     return offset.translate(-mOff.dx, -mOff.dy);
   }
 
-   //returns true when hit happens
+  //returns true when hit happens
   static bool isHitting(Widget view, Offset coordinate) {
     RenderBox box2 =
         (view.key as GlobalKey).currentContext?.findRenderObject() as RenderBox;
@@ -74,28 +75,31 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
     return collide;
   }
 
-
   // used to find block args from editor
   void findBlockArgs(Block block, Offset details,
       {Offset offset = const Offset(0, 0)}) {
     for (Block b in blocks) {
       if (b.isVisible) {
-        if (EditorPane.isHitting(b , details)) {
+        if (EditorPane.isHitting(b, details)) {
           b.setColor(Colors.green);
-          print(true);
           BlockArg? arg = b.getArgAtLocation(details);
 
           if (arg != null && block.isArgBlock()) {
             indicator?.indicateArg(arg); //shows the indicztor
+            print("shjdkks");
+            currentDropZone = arg;
+            return;
           } else {
             indicator?.indicateArg(null); //hides the indictor
           }
         } else {
-           b.setColor(Colors.amber);
+          b.setColor(Colors.amber);
           print(false);
         }
       }
     }
+    print("sjhdk");
+    currentDropZone = this;
   }
 
   @override

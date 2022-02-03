@@ -7,6 +7,7 @@ import 'package:flutter_application_1/Widgets/block_spec.dart';
 import 'package:flutter_application_1/Widgets/block_base.dart';
 import 'package:flutter_application_1/Widgets/block_methods.dart';
 import 'package:flutter_application_1/Widgets/block_size.dart';
+import 'package:flutter_application_1/Widgets/droppable_regions.dart';
 
 // ignore: must_be_immutable
 class Block extends StatefulWidget implements BlockMethods {
@@ -31,7 +32,7 @@ class Block extends StatefulWidget implements BlockMethods {
   double offsetX = 0; //local touch offset X
   double offsetY = 0; //local touch offset Y
 
-  Block? _parent;
+  Widget? _parent;
   Block? _next;
   Block? _previous;
   bool isVisible = true;
@@ -96,7 +97,7 @@ class Block extends StatefulWidget implements BlockMethods {
   }
 
   @override
-  Block? getParent() {
+  Widget? getParent() {
     return _parent;
   }
 
@@ -116,8 +117,28 @@ class Block extends StatefulWidget implements BlockMethods {
   }
 
   @override
-  void parent(Block parent) {
-    _parent = parent;
+  void dropTo(Widget parent) {
+    if (_parent != null) {
+      switch (_parent.runtimeType.toString()) {
+        case "EditorPane":
+          (_parent as EditorPane).removeBlock(this);
+          break;
+        case "BlockArg":
+          (_parent as BlockArg).removeBlock(this);
+          break;
+      }
+    }
+
+    switch (parent.runtimeType.toString()) {
+      case "EditorPane":
+        _parent = parent;
+        (parent as EditorPane).addBlock(this);
+        break;
+      case "BlockArg":
+        _parent = parent;
+        (parent as BlockArg).addBlock(this);
+        break;
+    }
   }
 
   @override
@@ -152,7 +173,7 @@ class Block extends StatefulWidget implements BlockMethods {
     BlockArg? target;
     for (Widget arg in _blockSpec.params) {
       if (arg is BlockArg) {
-        if (EditorPane.isHitting((arg as BlockArg) , location)) {
+        if (EditorPane.isHitting((arg as BlockArg), location)) {
           print("this is a" + arg.runtimeType.toString());
           if ((arg).hasChildBlock()) {
             // target = ((arg).getChildBlock()!.getArgAtLocation(location) != null)
@@ -207,7 +228,6 @@ class _BlockState extends State<Block> {
             setState(() {
               widget.isVisible = (widget.isFromPallette) ? true : false;
               widget.onDragStart!(widget);
-               
             });
             print("start");
           }
@@ -226,10 +246,10 @@ class _BlockState extends State<Block> {
         },
         onDragEnd: (details) {
           if (isTriggered) {
-            setState(() {
-              widget.isVisible = true;
-              widget.onDragEnd!(widget, pointer);
-            });
+            // setState(() {
+            //   widget.isVisible = true;
+            //   widget.onDragEnd!(widget, pointer);
+            // });
           }
           isTriggered = false;
         },

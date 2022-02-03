@@ -5,8 +5,9 @@ import 'package:flutter_application_1/Widgets/block_args.dart';
 abstract class BlockMethods {
   void setVisibility(bool visible);
   //parent
-  void parent(Block parent);
-  Block? getParent();
+  void dropTo(Widget parent);
+
+  Widget? getParent();
 
   //next
   void next(Block next);

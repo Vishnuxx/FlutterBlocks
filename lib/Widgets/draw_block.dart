@@ -22,8 +22,8 @@ class DrawBlock extends CustomPainter {
 
   bool showEmboss;
 
-  Paint embossL = Paint();
-  Paint embossD = Paint();
+  Paint _embossL = Paint();
+  Paint _embossD = Paint();
 
   double embossIntensity = 0.5;
 
@@ -34,15 +34,14 @@ class DrawBlock extends CustomPainter {
   double substack1Height;
   double substack2Height = 20;
 
-  DrawBlock({
-    this.blockColor = Colors.amber,
-    this.type,
-    this.width = 10,
-    this.topH = 10,
-    this.substack1Height = 20,
-    this.substack2Height = 20,
-    this.showEmboss = false
-  }) {
+  DrawBlock(
+      {this.blockColor = Colors.amber,
+      this.type,
+      this.width = 10,
+      this.topH = 10,
+      this.substack1Height = 20,
+      this.substack2Height = 20,
+      this.showEmboss = false}) {
     MIN_WIDTH = (4 * EDGE_INSET) + TOP_OUTSET_LENGTH + NOTCH_LENGTH;
     MIN_HEIGHT = 2 * EDGE_INSET + 10;
 
@@ -50,19 +49,20 @@ class DrawBlock extends CustomPainter {
     mPaint.style = PaintingStyle.fill;
     mPaint.isAntiAlias = true;
 
-    embossL.color = Colors.white.withOpacity(0.5);
-    embossL.strokeWidth = 2 * embossIntensity;
-    embossL.style = PaintingStyle.stroke;
-    embossL.isAntiAlias = true;
-    embossL.strokeCap = StrokeCap.round;
+    _embossL.color = Colors.white.withOpacity(0.5);
+    _embossL.strokeWidth = 2 * embossIntensity;
+    _embossL.style = PaintingStyle.stroke;
+    _embossL.isAntiAlias = true;
+    _embossL.strokeCap = StrokeCap.round;
 
-    embossD.color = Colors.black.withOpacity(0.3);
-    embossD.strokeWidth = 2 * embossIntensity;
-    embossD.style = PaintingStyle.stroke;
-    embossD.isAntiAlias = true;
-    embossL.strokeCap = StrokeCap.round;
+    _embossD.color = Colors.black.withOpacity(0.3);
+    _embossD.strokeWidth = 2 * embossIntensity;
+    _embossD.style = PaintingStyle.stroke;
+    _embossD.isAntiAlias = true;
+    _embossL.strokeCap = StrokeCap.round;
   }
 
+  //___________PUBLIC METHODS_____________________
   set setSubStack1Height(double value) => substack1Height = value;
   set setSubStack2Height(double value) => substack2Height = value;
 
@@ -73,18 +73,23 @@ class DrawBlock extends CustomPainter {
   double getWidth() => width;
 
   double getTotalHeight() {
-    if (type == "e") {
-      return 7 * EDGE_INSET + 20 + topH + substack1Height + substack2Height;
-    } else if (type == "f") {
-      return 5 * EDGE_INSET + 10 + topH + substack1Height;
-    } else if (type == "r") {
-      return 3 * EDGE_INSET + topH;
-    } else if (type == "b" || type == "s" || type == "n") {
-      return topH;
-    } else if (type == "x") {
-      return 4 * EDGE_INSET + topH;
-    } else {
-      return topH;
+    switch (type) {
+      case "e": //if-else
+        return 7 * EDGE_INSET + 20 + topH + substack1Height + substack2Height;
+      case "f": //if
+        return 5 * EDGE_INSET + 10 + topH + substack1Height;
+      case "r": //regular
+        return 3 * EDGE_INSET + topH;
+      case "x": //ending
+        return 4 * EDGE_INSET + topH;
+      case "b": //boolean
+        return topH;
+      case "s": //string
+        return topH;
+      case "n": //number
+        return topH;
+      default:
+        return topH;
     }
   }
 
@@ -93,74 +98,88 @@ class DrawBlock extends CustomPainter {
     switch (type) {
       case "s": //string
         drawString(canvas);
-       
-        if(showEmboss) {
+
+        if (showEmboss) {
           drawStringEmboss(canvas);
         }
+
         break;
+
       case "b": //boolean
         drawBoolean(canvas);
-       
-         if (showEmboss) {
-            drawBooleanEmboss(canvas);
-         }
+
+        if (showEmboss) {
+          drawBooleanEmboss(canvas);
+        }
+
         break;
+
       case "n": //number
         drawNumber(canvas);
-       
-         if (showEmboss) {
-            drawNumberEmboss(canvas);
-         }
+
+        if (showEmboss) {
+          drawNumberEmboss(canvas);
+        }
+
         break;
+
       case "e": //if-else
+
         drawTop(canvas);
         drawRightAndBottom(canvas);
         drawSubstackA(canvas);
         drawSubstackB(canvas);
         if (showEmboss) {
-           drawTopEmboss(canvas);
+          drawTopEmboss(canvas);
           drawRightAndBottomEmboss(canvas);
           drawSubstackAEmboss(canvas);
           drawSubstackBEmboss(canvas);
         }
-       
 
         break;
+
       case "f": //if
+
         drawTop(canvas);
         drawRightAndBottom(canvas);
         drawSubstackA(canvas);
         if (showEmboss) {
-           drawTopEmboss(canvas);
+          drawTopEmboss(canvas);
           drawRightAndBottomEmboss(canvas);
           drawSubstackAEmboss(canvas);
         }
-       
+
         break;
+
       case "r": //regular
-        drawTop(canvas);
-        drawRightAndBottom(canvas);
-         if (showEmboss) {
-           drawTopEmboss(canvas);
-          drawRightAndBottomEmboss(canvas);
-         }
-        
-        break;
-      case "x": //ending
+
         drawTop(canvas);
         drawRightAndBottom(canvas);
         if (showEmboss) {
           drawTopEmboss(canvas);
           drawRightAndBottomEmboss(canvas);
         }
-        
+
         break;
+
+      case "x": //ending
+
+        drawTop(canvas);
+        drawRightAndBottom(canvas);
+        if (showEmboss) {
+          drawTopEmboss(canvas);
+          drawRightAndBottomEmboss(canvas);
+        }
+
+        break;
+
       default: //regular
+
         drawString(canvas);
-         if (showEmboss) {
-            drawStringEmboss(canvas);
-         }
-       
+        if (showEmboss) {
+          drawStringEmboss(canvas);
+        }
+
         break;
     }
   }
@@ -174,8 +193,11 @@ class DrawBlock extends CustomPainter {
     return Offset(x, y);
   }
 
-  // draw Blocks
+  //_____________________BLOCK DRAWINGS___________________________
 
+  //
+
+  //String
   void drawString(Canvas canvas) {
     Path path = Path();
     path.lineTo(0, 0);
@@ -185,6 +207,7 @@ class DrawBlock extends CustomPainter {
     canvas.drawPath(path, mPaint);
   }
 
+  //Boolean
   void drawBoolean(Canvas canvas) {
     Path path = Path();
     double halfHeight = topH / 2;
@@ -197,6 +220,7 @@ class DrawBlock extends CustomPainter {
     canvas.drawPath(path, mPaint);
   }
 
+//Number
   void drawNumber(Canvas canvas) {
     Path path = Path();
     double halfHeight = topH / 2;
@@ -220,6 +244,7 @@ class DrawBlock extends CustomPainter {
     canvas.drawPath(path, mPaint);
   }
 
+//Top
   void drawTop(Canvas canvas) {
     Path path1 = Path();
     path1.moveTo(0, EDGE_INSET + embossIntensity);
@@ -238,6 +263,7 @@ class DrawBlock extends CustomPainter {
     canvas.drawPath(path1, mPaint);
   }
 
+//Right and Bottom
   void drawRightAndBottom(Canvas canvas) {
     Path path = Path();
     path.moveTo(width, EDGE_INSET);
@@ -273,6 +299,7 @@ class DrawBlock extends CustomPainter {
     canvas.drawPath(path, mPaint);
   }
 
+//Substack A
   void drawSubstackA(Canvas canvas) {
     Path path = Path();
     double leftX = SUBSTACK_INSET + TOP_OUTSET_LENGTH;
@@ -330,6 +357,7 @@ class DrawBlock extends CustomPainter {
     canvas.drawPath(path, mPaint);
   }
 
+//Substack B
   void drawSubstackB(Canvas canvas) {
     Path path = Path();
     double leftX = TOP_OUTSET_LENGTH + SUBSTACK_INSET;
@@ -367,18 +395,28 @@ class DrawBlock extends CustomPainter {
     canvas.drawPath(path, mPaint);
   }
 
-  //Draw Emboss effect
+//
+
+//
+
+//
+
+  //___________Emboss effects________________
+
+  //
+
+  //
   void drawStringEmboss(Canvas canvas) {
     Path path1 = Path();
     path1.moveTo(0 + embossIntensity, topH);
     path1.lineTo(0 + embossIntensity, 0 + embossIntensity);
     path1.lineTo(width, 0 + embossIntensity);
-    canvas.drawPath(path1, embossL);
+    canvas.drawPath(path1, _embossL);
     Path path2 = Path();
     path2.moveTo(width - embossIntensity, 0);
     path2.lineTo(width - embossIntensity, topH - embossIntensity);
     path2.lineTo(0, topH - embossIntensity);
-    canvas.drawPath(path2, embossD);
+    canvas.drawPath(path2, _embossD);
   }
 
   void drawBooleanEmboss(Canvas canvas) {
@@ -387,13 +425,13 @@ class DrawBlock extends CustomPainter {
     path1.moveTo(0 + embossIntensity, halfHeight + embossIntensity);
     path1.lineTo(halfHeight + embossIntensity, embossIntensity);
     path1.lineTo(width - halfHeight, embossIntensity);
-    canvas.drawPath(path1, embossL);
+    canvas.drawPath(path1, _embossL);
     Path path2 = Path();
     path2.moveTo(width - embossIntensity, halfHeight);
     path2.lineTo(
         (width - halfHeight) - embossIntensity, topH - embossIntensity);
     path2.lineTo(halfHeight + embossIntensity, topH - embossIntensity);
-    canvas.drawPath(path2, embossD);
+    canvas.drawPath(path2, _embossD);
   }
 
   void drawNumberEmboss(Canvas canvas) {
@@ -410,7 +448,7 @@ class DrawBlock extends CustomPainter {
         2, //3.15,
         true);
     path1.lineTo(width - halfHeight + embossIntensity, 0 + embossIntensity);
-    canvas.drawPath(path1, embossL);
+    canvas.drawPath(path1, _embossL);
 
     Path path2 = Path();
     path2.arcTo(
@@ -423,7 +461,7 @@ class DrawBlock extends CustomPainter {
         1, // 3.15,
         true);
     path2.lineTo(halfHeight - embossIntensity, topH - embossIntensity);
-    canvas.drawPath(path2, embossD);
+    canvas.drawPath(path2, _embossD);
   }
 
   void drawTopEmboss(Canvas canvas) {
@@ -441,7 +479,7 @@ class DrawBlock extends CustomPainter {
     path1.lineTo(width - EDGE_INSET - embossIntensity, 0 + embossIntensity);
     //path1.lineTo(width, EDGE_INSET + embossIntensity);
 
-    canvas.drawPath(path1, embossL);
+    canvas.drawPath(path1, _embossL);
   }
 
   void drawRightAndBottomEmboss(Canvas canvas) {
@@ -484,7 +522,7 @@ class DrawBlock extends CustomPainter {
       path.lineTo(0 - embossIntensity, topH - EDGE_INSET - embossIntensity);
       path.lineTo(0 - embossIntensity, EDGE_INSET - embossIntensity);
     }
-    canvas.drawPath(path, embossD);
+    canvas.drawPath(path, _embossD);
   }
 
   void drawSubstackAEmboss(Canvas canvas) {
@@ -496,7 +534,7 @@ class DrawBlock extends CustomPainter {
         topH + substack1Height); //substack hei
     path1.lineTo(SUBSTACK_INSET + EDGE_INSET - embossIntensity,
         topH + substack1Height + EDGE_INSET);
-    canvas.drawPath(path1, embossD);
+    canvas.drawPath(path1, _embossD);
 
     Path path2 = Path();
     path2.moveTo(leftX + EDGE_INSET,
@@ -515,7 +553,7 @@ class DrawBlock extends CustomPainter {
         topH + substack1Height + EDGE_INSET + embossIntensity);
     path2.lineTo(
         width, topH + substack1Height + (2 * EDGE_INSET) + embossIntensity);
-    canvas.drawPath(path2, embossL);
+    canvas.drawPath(path2, _embossL);
 
     path1.moveTo(
         width - embossIntensity, topH + substack1Height + (2 * EDGE_INSET));
@@ -523,7 +561,7 @@ class DrawBlock extends CustomPainter {
         topH + substack1Height + (2 * EDGE_INSET) + 10);
     path1.lineTo(width - EDGE_INSET - embossIntensity,
         topH + substack1Height + (3 * EDGE_INSET) - embossIntensity + 10);
-    canvas.drawPath(path1, embossD);
+    canvas.drawPath(path1, _embossD);
 
     if (type == "e") {
       leftX = SUBSTACK_INSET + TOP_OUTSET_LENGTH;
@@ -557,7 +595,7 @@ class DrawBlock extends CustomPainter {
       path1.lineTo(0 + embossIntensity, EDGE_INSET + embossIntensity);
     }
 
-    canvas.drawPath(path1, embossD);
+    canvas.drawPath(path1, _embossD);
   }
 
   void drawSubstackBEmboss(Canvas canvas) {
@@ -572,7 +610,7 @@ class DrawBlock extends CustomPainter {
 
     path1.lineTo(SUBSTACK_INSET + EDGE_INSET + embossIntensity,
         subBH + substack2Height + EDGE_INSET + embossIntensity);
-    canvas.drawPath(path1, embossD);
+    canvas.drawPath(path1, _embossD);
 
     path.moveTo(SUBSTACK_INSET + EDGE_INSET + embossIntensity,
         subBH + substack2Height + EDGE_INSET + embossIntensity);
@@ -589,7 +627,7 @@ class DrawBlock extends CustomPainter {
     path.lineTo(
         width, subBH + substack2Height + 2 * EDGE_INSET + embossIntensity);
 
-    canvas.drawPath(path, embossL);
+    canvas.drawPath(path, _embossL);
 
     Path path2 = Path();
     //Bottom
@@ -613,11 +651,11 @@ class DrawBlock extends CustomPainter {
     path2.lineTo(0 + embossIntensity,
         subBH + substack2Height + (2 * EDGE_INSET) - embossIntensity + 10);
 
-    canvas.drawPath(path2, embossD);
+    canvas.drawPath(path2, _embossD);
 
     path.moveTo(0 + embossIntensity,
         subBH + substack2Height + (2 * EDGE_INSET) - embossIntensity + 10);
     path.lineTo(0 + embossIntensity, EDGE_INSET + embossIntensity);
-    canvas.drawPath(path, embossL);
+    canvas.drawPath(path, _embossL);
   }
 }

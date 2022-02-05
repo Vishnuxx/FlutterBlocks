@@ -87,12 +87,10 @@ class LogicEditor extends StatelessWidget {
       },
       onDragMove: (b, location) {
         moveDrag(b, location);
-        print("move");
+       
       },
       onDragEnd: (b, details) {
-       // endDrag(b);
-       generateBlock(GlobalKey(), b.x! , b.y!).dropTo(editorPane.currentDropZone!);
-        print(editorPane.currentDropZone);
+        endDrag(b);
       },
     );
   }
@@ -110,19 +108,19 @@ class LogicEditor extends StatelessWidget {
       x: _x,
       y: _y,
       onDragStart: (b) {
-        //startDrag(b);
+        startDrag(b);
       },
       onDragMove: (b, location) {
-        //moveDrag(b, location);
+        moveDrag(b, location);
       },
       onDragEnd: (b, location) {
         // print("end");
-        // endDrag(b);
-        
+        endDrag(b);
       },
     );
   }
 
+  //START
   void startDrag(Block draggingBlock) {
     if (draggingBlock.isFromPallette && !draggingBlock.isArgBlock()) {
       // from pallette but not arg
@@ -138,42 +136,41 @@ class LogicEditor extends StatelessWidget {
     }
   }
 
+  //MOVE
   void moveDrag(Block draggingBlock, Offset location) {
+   
     if (draggingBlock.isFromPallette && !draggingBlock.isArgBlock()) {
       // from pallette but not arg
+      editorPane.findStatementBlockDropZone(draggingBlock, location);
     } else if (draggingBlock.isFromPallette && draggingBlock.isArgBlock()) {
       // from pallette and it is arg
-
+      editorPane.findBlockArgs(draggingBlock, location);
     } else if (!draggingBlock.isFromPallette && !draggingBlock.isArgBlock()) {
       //not from pallette and not arg
-      editorPane.findBlockArgs(draggingBlock, location);
+     
+       editorPane.findStatementBlockDropZone(draggingBlock, location);
     } else if (!draggingBlock.isFromPallette && draggingBlock.isArgBlock()) {
       //not from pallette but is arg
       editorPane.findBlockArgs(draggingBlock, location);
     }
   }
 
+  //END
   void endDrag(Block draggingBlock) {
     if (draggingBlock.isFromPallette && !draggingBlock.isArgBlock()) {
       // from pallette but not arg
-      editorPane.addBlock(
-          generateBlock(GlobalKey(), draggingBlock.x!, draggingBlock.y!));
+      generateBlock(GlobalKey(), draggingBlock.x!, draggingBlock.y!)
+          .dropTo(editorPane);
     } else if (draggingBlock.isFromPallette && draggingBlock.isArgBlock()) {
       // from pallette and it is arg
-      print("rjksj");
-
-      if (editorPane.currentDropZone is EditorPane) {
-        print(editorPane.currentDropZone);
-      } else if (editorPane.currentDropZone is BlockArg) {
-        (editorPane.currentDropZone as BlockArg).addBlock(
-            generateBlock(GlobalKey(), draggingBlock.x!, draggingBlock.y!));
-      }
+      generateBlock(GlobalKey(), draggingBlock.x!, draggingBlock.y!)
+          .dropTo(editorPane.currentDropZone!);
     } else if (!draggingBlock.isFromPallette && !draggingBlock.isArgBlock()) {
       //not from pallette and not arg
 
     } else if (!draggingBlock.isFromPallette && draggingBlock.isArgBlock()) {
       //not from pallette but is arg
-
+      draggingBlock.dropTo(editorPane.currentDropZone!);
     }
   }
 }

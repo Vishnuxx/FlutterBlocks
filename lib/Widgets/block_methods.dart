@@ -25,7 +25,9 @@ abstract class BlockMethods {
 
   BlockArg? getArgAtLocation(Offset location);
 
- // bool isHitting(Offset location);
+  // bool isHitting(Offset location);
 
   bool isArgBlock();
+
+  
 }

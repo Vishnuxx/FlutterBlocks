@@ -10,7 +10,7 @@ import 'package:flutter_application_1/Widgets/block_size.dart';
 import 'package:flutter_application_1/Widgets/droppable_regions.dart';
 
 // ignore: must_be_immutable
-class Block extends StatefulWidget implements BlockMethods {
+class Block extends StatefulWidget extends DrawBlock implements BlockMethods {
   final _BlockState _state = _BlockState();
   final String type;
   Color color;
@@ -24,8 +24,8 @@ class Block extends StatefulWidget implements BlockMethods {
   final String specs;
   double topH;
   double width;
-  double? x = 0;
-  double? y = 0;
+  double? x = -1;
+  double? y = -1;
   double subAH;
   double subBH;
 
@@ -36,6 +36,8 @@ class Block extends StatefulWidget implements BlockMethods {
   Block? _next;
   Block? _previous;
   bool isVisible = true;
+  bool isInEditor = true;
+
   late BlockSpec _blockSpec; // specs hold iside here
 
   LogicEditor editor;
@@ -133,12 +135,15 @@ class Block extends StatefulWidget implements BlockMethods {
       case "EditorPane":
         _parent = parent;
         (parent as EditorPane).addBlock(this);
+        
         break;
       case "BlockArg":
         _parent = parent;
         (parent as BlockArg).addBlock(this);
+        
         break;
     }
+    print("dropped");
   }
 
   @override
@@ -168,18 +173,24 @@ class Block extends StatefulWidget implements BlockMethods {
         type == "d";
   }
 
+  void setPositioned(bool pos) {
+    _state.setState(() {
+      isInEditor = pos;
+    });
+  }
+
   @override //returns the blockarg of at a pointer location
   BlockArg? getArgAtLocation(Offset location) {
     BlockArg? target;
     for (Widget arg in _blockSpec.params) {
       if (arg is BlockArg) {
         if (EditorPane.isHitting((arg as BlockArg), location)) {
-          print("this is a" + arg.runtimeType.toString());
+       
           if ((arg).hasChildBlock()) {
-            // target = ((arg).getChildBlock()!.getArgAtLocation(location) != null)
-            //     ? (arg).getChildBlock()!.getArgAtLocation(location)
-            //     : arg;
-            target = arg;
+            target = ((arg).getChildBlock()!.getArgAtLocation(location) != null)
+                ? (arg).getChildBlock()!.getArgAtLocation(location)
+                : arg;
+            //target = arg;
           } else {
             target = arg;
           }
@@ -203,6 +214,10 @@ class _BlockState extends State<Block> {
     //print("initstte");
     widget._blockSpec = BlockSpec(
       args: widget.specs,
+      onSizeChanged: (p0) {
+        widget.width = p0.width;
+        widget.topH = p0.height;
+      },
     );
   }
 
@@ -229,7 +244,7 @@ class _BlockState extends State<Block> {
               widget.isVisible = (widget.isFromPallette) ? true : false;
               widget.onDragStart!(widget);
             });
-            print("start");
+         
           }
         },
         onDragUpdate: (details) {
@@ -246,10 +261,10 @@ class _BlockState extends State<Block> {
         },
         onDragEnd: (details) {
           if (isTriggered) {
-            // setState(() {
-            //   widget.isVisible = true;
-            //   widget.onDragEnd!(widget, pointer);
-            // });
+            setState(() {
+              widget.isVisible = true;
+              widget.onDragEnd!(widget, pointer);
+            });
           }
           isTriggered = false;
         },
@@ -293,8 +308,12 @@ class _BlockState extends State<Block> {
         // ____________IS FROM PALLETTE____________
         return mBlock();
       } else {
-        //_______IS NOT FROM PALLETTE___________
-        return Positioned(left: widget.x, top: widget.y, child: mBlock());
+        if (widget.isInEditor) {
+          //_______IS NOT FROM PALLETTE___________
+          return Positioned(left: widget.x, top: widget.y, child: mBlock());
+        } else {
+          return mBlock();
+        }
       }
     } else {
       // _____________IS NOT DRAGGABLE_____________
@@ -319,6 +338,7 @@ class _BlockState extends State<Block> {
                       setState(() {
                         widget.topH = size.height;
                         widget.width = size.width;
+                       
                       });
                     },
                     child: widget._blockSpec),

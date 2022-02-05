@@ -18,7 +18,9 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
   Widget? currentDropZone; //returns the current drop zone
 
   EditorPane({Key? key, this.editor, this.width, this.height})
-      : super(key: key);
+      : super(key: key) {
+    currentDropZone = this;
+  }
 
   void addHelper(Widget helper) {
     // ignore: invalid_use_of_protected_member
@@ -76,30 +78,42 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
   }
 
   // used to find block args from editor
-  void findBlockArgs(Block block, Offset details,
-      {Offset offset = const Offset(0, 0)}) {
+  void findBlockArgs(Block draggable, Offset details) {
     for (Block b in blocks) {
       if (b.isVisible) {
         if (EditorPane.isHitting(b, details)) {
-          b.setColor(Colors.green);
           BlockArg? arg = b.getArgAtLocation(details);
 
-          if (arg != null && block.isArgBlock()) {
+          if (arg != null && draggable.isArgBlock() && !(arg is EditorPane)) {
             indicator?.indicateArg(arg); //shows the indicztor
-            print("shjdkks");
             currentDropZone = arg;
             return;
           } else {
             indicator?.indicateArg(null); //hides the indictor
           }
         } else {
-          b.setColor(Colors.amber);
           print(false);
         }
       }
     }
-    print("sjhdk");
     currentDropZone = this;
+  }
+
+  //triggers and highlights the dropzone for statement blocks
+  void findStatementBlockDropZone(Block draggable, Offset location) {
+    for (Block b in blocks) {
+      if (b.isVisible) {
+        if (EditorPane.isHitting(b, location)) {
+          if(!b.isArgBlock()) {
+            print("yesss");
+            indicator?.indicateNextBlock(b);
+          }
+          break;
+        } else {
+          indicator?.indicateNextBlock(null);
+        }
+      }
+    }
   }
 
   @override

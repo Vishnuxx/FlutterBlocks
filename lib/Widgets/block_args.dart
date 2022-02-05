@@ -28,8 +28,14 @@ class BlockArg extends StatefulWidget implements DroppableRegion {
     if (canAcceptBlockOfType(block.type)) {
       // ignore: invalid_use_of_protected_member
       _state.setState(() {
+        block.x = 0;
+        block.y = 0;
         _child = block;
+         width = block.width;
+        height = block.topH;
       });
+    } else {
+      print("already has child block");
     }
   }
 
@@ -38,6 +44,8 @@ class BlockArg extends StatefulWidget implements DroppableRegion {
     // ignore: invalid_use_of_protected_member
     _state.setState(() {
       _child = null;
+        width = 30;
+      height = 20;
     });
   }
 
@@ -55,14 +63,14 @@ class BlockArg extends StatefulWidget implements DroppableRegion {
     return type == _type;
   }
 
- 
-
   @override
   // ignore: no_logic_in_create_state
   State<BlockArg> createState() => _state;
 }
 
 class _BlockArgState extends State<BlockArg> {
+
+  
   String _argType(String type) {
     String t = "s";
     switch (type) {
@@ -79,27 +87,31 @@ class _BlockArgState extends State<BlockArg> {
   @override
   Widget build(BuildContext context) {
     Widget wid = BlockSize(
-        onChange: (size) {
-          widget.width = size.width;
-        },
-        child: SizedBox(
-          width: widget.width,
-          height: widget.height,
-          child: Stack(
-            children: [
-              CustomPaint(
-                  painter: DrawBlock(
-                      blockColor:
-                          (widget._trigger) ? Colors.red : widget.color!,
-                      type: _argType(widget.type!),
-                      width: widget.width!,
-                      topH: widget.height!)),
-              Container(
-                child: widget._child,
-              )
-            ],
-          ),
-        ));
+      child: Wrap(
+        direction: Axis.horizontal,
+        children: [
+          CustomPaint(
+              painter: DrawBlock(
+                  blockColor: (widget._trigger) ? Colors.red : widget.color!,
+                  type: _argType(widget.type!),
+                  width: widget.width!,
+                  topH: widget.height!)),
+          SizedBox(
+              width: widget.width, height: widget.height, child: widget._child),
+        ],
+      ),
+      onChange: (size) {
+        if (widget._child != null) {
+          setState(() {
+            widget.width = size.width;
+            widget.height = size.height;
+          });
+        } else {
+          widget.height = 20;
+          widget.width = 30;
+        }
+      },
+    );
 
     return wid;
   }

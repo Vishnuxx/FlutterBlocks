@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 class BlockSize extends StatefulWidget {
-  final Widget child;
+  final Widget? child;
   final Function(Size size) onChange;
 
    const BlockSize({

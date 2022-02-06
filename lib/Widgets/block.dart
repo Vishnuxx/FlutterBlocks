@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Screens/Editor/editorpane.dart';
 import 'package:flutter_application_1/Screens/Editor/logic_editor.dart';
+import 'package:flutter_application_1/Widgets/arg_indicatior.dart';
 
 import 'package:flutter_application_1/Widgets/block_args.dart';
 import 'package:flutter_application_1/Widgets/block_spec.dart';
 import 'package:flutter_application_1/Widgets/block_base.dart';
 import 'package:flutter_application_1/Widgets/block_methods.dart';
 import 'package:flutter_application_1/Widgets/block_size.dart';
+import 'package:flutter_application_1/Widgets/draw_block.dart';
 import 'package:flutter_application_1/Widgets/droppable_regions.dart';
 
 // ignore: must_be_immutable
-class Block extends StatefulWidget extends DrawBlock implements BlockMethods {
+class Block extends StatefulWidget implements BlockMethods {
   final _BlockState _state = _BlockState();
+  late Base _base;
   final String type;
   Color color;
   final bool isDraggable;
@@ -24,8 +27,8 @@ class Block extends StatefulWidget extends DrawBlock implements BlockMethods {
   final String specs;
   double topH;
   double width;
-  double? x = -1;
-  double? y = -1;
+  double? x = 0;
+  double? y = 0;
   double subAH;
   double subBH;
 
@@ -53,8 +56,8 @@ class Block extends StatefulWidget extends DrawBlock implements BlockMethods {
       this.topH = 20,
       this.width = 80,
       this.color = Colors.amber,
-      this.subAH = 20,
-      this.subBH = 20,
+      this.subAH = 10,
+      this.subBH = 10,
       this.onTap,
       this.onDragStart,
       this.onDragMove,
@@ -135,12 +138,12 @@ class Block extends StatefulWidget extends DrawBlock implements BlockMethods {
       case "EditorPane":
         _parent = parent;
         (parent as EditorPane).addBlock(this);
-        
+
         break;
       case "BlockArg":
         _parent = parent;
         (parent as BlockArg).addBlock(this);
-        
+
         break;
     }
     print("dropped");
@@ -165,6 +168,26 @@ class Block extends StatefulWidget extends DrawBlock implements BlockMethods {
   }
 
   @override
+  double getTotalHeight() {
+    return _base.getTotalHeight();
+  }
+
+  @override
+  double subAY() {
+    return y! + _base.subAY();
+  }
+
+  @override
+  double subBY() {
+    return y! + _base.subBY();
+  }
+
+  @override
+  double substackX() {
+    return x! + _base.substackX();
+  }
+
+  @override
   bool isArgBlock() {
     return type == "s" ||
         type == "b" ||
@@ -173,19 +196,12 @@ class Block extends StatefulWidget extends DrawBlock implements BlockMethods {
         type == "d";
   }
 
-  void setPositioned(bool pos) {
-    _state.setState(() {
-      isInEditor = pos;
-    });
-  }
-
   @override //returns the blockarg of at a pointer location
   BlockArg? getArgAtLocation(Offset location) {
     BlockArg? target;
     for (Widget arg in _blockSpec.params) {
       if (arg is BlockArg) {
         if (EditorPane.isHitting((arg as BlockArg), location)) {
-       
           if ((arg).hasChildBlock()) {
             target = ((arg).getChildBlock()!.getArgAtLocation(location) != null)
                 ? (arg).getChildBlock()!.getArgAtLocation(location)
@@ -202,7 +218,95 @@ class Block extends StatefulWidget extends DrawBlock implements BlockMethods {
     }
     return target;
   }
+
+  void setPositioned(bool pos) {
+    _state.setState(() {
+      isInEditor = pos;
+    });
+  }
+
+  @override
+  void indicateNext(ArgIndicator indicator) {
+    if (getNext() != null) {
+      indicator.set(() {
+        indicator.x = x!;
+        indicator.y = y! + getTotalHeight();
+        indicator.width = width;
+        indicator.height = 5;
+        indicator.isVisible = true;
+        indicator.type = "i";
+      });
+    } else {
+      indicator.set(() {
+        indicator.x = x!;
+        indicator.y = y! + getTotalHeight();
+        indicator.width = width;
+        indicator.height = 20;
+        indicator.isVisible = true;
+        indicator.type = "r";
+      });
+    }
+  }
+
+  @override
+  void indicateSubA(ArgIndicator indicator) {
+    if (type == "e" || type == "f") {
+      indicator.set(() {
+        print("object");
+        indicator.x = substackX();
+        indicator.y = subAY();
+        indicator.width = width - DrawBlock.SUBSTACK_INSET;
+        indicator.height = 5;
+        indicator.isVisible = true;
+        indicator.type = "i";
+      });
+    }
+  }
+
+  @override
+  void indicateSubB(ArgIndicator indicator) {
+    if (type == "e") {
+      indicator.set(() {
+        indicator.x = substackX();
+        indicator.y = subBY();
+        indicator.width = width - DrawBlock.SUBSTACK_INSET;
+        indicator.height = 5;
+        indicator.isVisible = true;
+        indicator.type = "i";
+      });
+    }
+  }
+
+  @override
+  void indicatePrevious(ArgIndicator indicator) {
+    indicator.set(() {
+      indicator.x = substackX();
+      indicator.y = subBY();
+      indicator.width = width - DrawBlock.SUBSTACK_INSET;
+      indicator.height = 5;
+      indicator.isVisible = true;
+      indicator.type = "i";
+    });
+  }
+
+  @override
+  void indicateasParent(ArgIndicator indicator) {
+    // TODO: implement indicateasParent
+  }
 }
+
+///
+///
+///
+///
+///
+///
+////STATE____________________
+///
+///
+///
+///
+///
 
 class _BlockState extends State<Block> {
   late Offset pointer = const Offset(0, 0);
@@ -211,7 +315,7 @@ class _BlockState extends State<Block> {
   @override
   void initState() {
     super.initState();
-    //print("initstte");
+
     widget._blockSpec = BlockSpec(
       args: widget.specs,
       onSizeChanged: (p0) {
@@ -244,7 +348,6 @@ class _BlockState extends State<Block> {
               widget.isVisible = (widget.isFromPallette) ? true : false;
               widget.onDragStart!(widget);
             });
-         
           }
         },
         onDragUpdate: (details) {
@@ -278,14 +381,7 @@ class _BlockState extends State<Block> {
           },
           child: Stack(
             children: [
-              Base(
-                type: widget.type,
-                topH: widget.topH,
-                width: widget.width,
-                color: widget.color,
-                subAH: widget.subAH,
-                subBH: widget.subBH,
-              ),
+              widget._base,
               BlockSize(
                   onChange: (size) {
                     setState(() {
@@ -303,6 +399,14 @@ class _BlockState extends State<Block> {
 
   @override
   Widget build(BuildContext context) {
+    widget._base = Base(
+      type: widget.type,
+      topH: widget.topH,
+      width: widget.width,
+      color: widget.color,
+      subAH: widget.subAH,
+      subBH: widget.subBH,
+    );
     if (widget.isDraggable) {
       if (widget.isFromPallette) {
         // ____________IS FROM PALLETTE____________
@@ -325,20 +429,12 @@ class _BlockState extends State<Block> {
             Stack(
               fit: StackFit.passthrough,
               children: [
-                Base(
-                  type: widget.type,
-                  topH: widget.topH,
-                  width: widget.width,
-                  color: widget.color,
-                  subAH: widget.subAH,
-                  subBH: widget.subBH,
-                ),
+                widget._base,
                 BlockSize(
                     onChange: (size) {
                       setState(() {
                         widget.topH = size.height;
                         widget.width = size.width;
-                       
                       });
                     },
                     child: widget._blockSpec),

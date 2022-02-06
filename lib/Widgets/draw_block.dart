@@ -6,12 +6,12 @@ class DrawBlock extends CustomPainter {
   // ignore: non_constant_identifier_names
   static double TOP_OUTSET_LENGTH = 15;
   // ignore: non_constant_identifier_names
-  static double SUBSTACK_INSET = 15;
+  static double SUBSTACK_INSET = 15; //thickness of the left of substack
   // ignore: non_constant_identifier_names
   static double NOTCH_LENGTH = 15;
 
   // ignore: non_constant_identifier_names
-  double MIN_WIDTH = 10;
+  double MIN_WIDTH = 100;
   // ignore: non_constant_identifier_names
   double MIN_HEIGHT = 16;
 
@@ -31,7 +31,7 @@ class DrawBlock extends CustomPainter {
   double topH;
 
   //substack
-  double substack1Height;
+  double substack1Height = 20;
   double substack2Height = 20;
 
   DrawBlock(
@@ -41,7 +41,8 @@ class DrawBlock extends CustomPainter {
       this.topH = 10,
       this.substack1Height = 20,
       this.substack2Height = 20,
-      this.showEmboss = false}) {
+      this.showEmboss = false,
+      this.embossIntensity = 0.5}) {
     MIN_WIDTH = (4 * EDGE_INSET) + TOP_OUTSET_LENGTH + NOTCH_LENGTH;
     MIN_HEIGHT = 2 * EDGE_INSET + 10;
 
@@ -75,13 +76,13 @@ class DrawBlock extends CustomPainter {
   double getTotalHeight() {
     switch (type) {
       case "e": //if-else
-        return 7 * EDGE_INSET + 20 + topH + substack1Height + substack2Height;
+        return 5 * EDGE_INSET + 20 + topH + substack1Height + substack2Height;
       case "f": //if
-        return 5 * EDGE_INSET + 10 + topH + substack1Height;
+        return 3 * EDGE_INSET + 10 + topH + substack1Height;
       case "r": //regular
-        return 3 * EDGE_INSET + topH;
+        return topH;
       case "x": //ending
-        return 4 * EDGE_INSET + topH;
+        return topH;
       case "b": //boolean
         return topH;
       case "s": //string
@@ -172,7 +173,11 @@ class DrawBlock extends CustomPainter {
         }
 
         break;
+      case "i": //indicator normal
 
+        drawIndicator(canvas);
+
+        break;
       default: //regular
 
         drawString(canvas);
@@ -197,6 +202,44 @@ class DrawBlock extends CustomPainter {
 
   //
 
+  //Indicator shadow
+  void drawIndicator(Canvas canvas) {
+    Path path = Path();
+    double halfHeight = topH / 2;
+    path.moveTo(0, halfHeight);
+    path.lineTo(halfHeight, 0);
+
+    path.lineTo(
+        EDGE_INSET + TOP_OUTSET_LENGTH , 0 );
+    double leftX = EDGE_INSET + TOP_OUTSET_LENGTH + EDGE_INSET;
+    path.lineTo(leftX , EDGE_INSET );
+
+    path.lineTo(
+        leftX + NOTCH_LENGTH , EDGE_INSET );
+    path.lineTo(leftX + NOTCH_LENGTH + EDGE_INSET, 0 );
+
+
+    path.lineTo(width - halfHeight, 0);
+    path.lineTo(width, halfHeight);
+    path.lineTo(width - halfHeight, topH);
+
+
+    leftX = EDGE_INSET + TOP_OUTSET_LENGTH + EDGE_INSET;
+   path.lineTo(
+       leftX +  EDGE_INSET + TOP_OUTSET_LENGTH , topH );
+    
+        path.lineTo(
+          leftX + NOTCH_LENGTH , topH + EDGE_INSET );
+    path.lineTo(leftX , topH + EDGE_INSET );
+
+ 
+   path.lineTo(EDGE_INSET + TOP_OUTSET_LENGTH , topH  );
+
+
+    path.lineTo(halfHeight, topH);
+    canvas.drawPath(path, mPaint);
+  }
+
   //String
   void drawString(Canvas canvas) {
     Path path = Path();
@@ -213,6 +256,9 @@ class DrawBlock extends CustomPainter {
     double halfHeight = topH / 2;
     path.moveTo(0, halfHeight);
     path.lineTo(halfHeight, 0);
+
+    
+
     path.lineTo(width - halfHeight, 0);
     path.lineTo(width, halfHeight);
     path.lineTo(width - halfHeight, topH);
@@ -380,14 +426,14 @@ class DrawBlock extends CustomPainter {
     path.lineTo(width, subBH + substack2Height + (2 * EDGE_INSET) + 10);
     path.lineTo(
         width - EDGE_INSET, subBH + substack2Height + (3 * EDGE_INSET) + 10);
-    path.lineTo(leftX + 2 * EDGE_INSET,
+    path.lineTo(leftX + 3 * EDGE_INSET,
         subBH + substack2Height + (3 * EDGE_INSET) + 10);
-    path.lineTo(
-        leftX + EDGE_INSET, subBH + substack2Height + (4 * EDGE_INSET) + 10);
-    path.lineTo(SUBSTACK_INSET + EDGE_INSET,
+    path.lineTo(leftX + (2 * EDGE_INSET),
         subBH + substack2Height + (4 * EDGE_INSET) + 10);
-    path.lineTo(
-        SUBSTACK_INSET, subBH + substack2Height + (3 * EDGE_INSET) + 10);
+    path.lineTo(SUBSTACK_INSET + (2 * EDGE_INSET),
+        subBH + substack2Height + (4 * EDGE_INSET) + 10);
+    path.lineTo(SUBSTACK_INSET + EDGE_INSET,
+        subBH + substack2Height + (3 * EDGE_INSET) + 10);
     path.lineTo(EDGE_INSET, subBH + substack2Height + (3 * EDGE_INSET) + 10);
     path.lineTo(0, subBH + substack2Height + (2 * EDGE_INSET) + 10);
     path.lineTo(0, subBH);
@@ -554,7 +600,7 @@ class DrawBlock extends CustomPainter {
     path2.lineTo(
         width, topH + substack1Height + (2 * EDGE_INSET) + embossIntensity);
     canvas.drawPath(path2, _embossL);
-
+    path1 = Path();
     path1.moveTo(
         width - embossIntensity, topH + substack1Height + (2 * EDGE_INSET));
     path1.lineTo(width - embossIntensity,
@@ -611,7 +657,7 @@ class DrawBlock extends CustomPainter {
     path1.lineTo(SUBSTACK_INSET + EDGE_INSET + embossIntensity,
         subBH + substack2Height + EDGE_INSET + embossIntensity);
     canvas.drawPath(path1, _embossD);
-
+    path = Path();
     path.moveTo(SUBSTACK_INSET + EDGE_INSET + embossIntensity,
         subBH + substack2Height + EDGE_INSET + embossIntensity);
     path.lineTo(leftX + EDGE_INSET + embossIntensity,
@@ -638,13 +684,13 @@ class DrawBlock extends CustomPainter {
         subBH + substack2Height + (2 * EDGE_INSET) - embossIntensity + 10);
     path2.lineTo(width - EDGE_INSET - embossIntensity,
         subBH + substack2Height + (3 * EDGE_INSET) - embossIntensity + 10);
-    path2.lineTo(leftX + 2 * EDGE_INSET - embossIntensity,
+    path2.lineTo(leftX + 3 * EDGE_INSET - embossIntensity,
         subBH + substack2Height + (3 * EDGE_INSET) - embossIntensity + 10);
-    path2.lineTo(leftX + EDGE_INSET - embossIntensity,
+    path2.lineTo(leftX + (2 * EDGE_INSET) - embossIntensity,
         subBH + substack2Height + (4 * EDGE_INSET) - embossIntensity + 10);
-    path2.lineTo(SUBSTACK_INSET + EDGE_INSET - embossIntensity,
+    path2.lineTo(SUBSTACK_INSET + 2 * EDGE_INSET - embossIntensity,
         subBH + substack2Height + (4 * EDGE_INSET) - embossIntensity + 10);
-    path2.lineTo(SUBSTACK_INSET - embossIntensity,
+    path2.lineTo(SUBSTACK_INSET - embossIntensity + EDGE_INSET,
         subBH + substack2Height + (3 * EDGE_INSET) - embossIntensity + 10);
     path2.lineTo(EDGE_INSET + embossIntensity,
         subBH + substack2Height + (3 * EDGE_INSET) - embossIntensity + 10);
@@ -652,7 +698,7 @@ class DrawBlock extends CustomPainter {
         subBH + substack2Height + (2 * EDGE_INSET) - embossIntensity + 10);
 
     canvas.drawPath(path2, _embossD);
-
+    path = Path();
     path.moveTo(0 + embossIntensity,
         subBH + substack2Height + (2 * EDGE_INSET) - embossIntensity + 10);
     path.lineTo(0 + embossIntensity, EDGE_INSET + embossIntensity);

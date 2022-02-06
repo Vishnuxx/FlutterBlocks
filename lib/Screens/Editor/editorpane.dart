@@ -103,17 +103,57 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
   void findStatementBlockDropZone(Block draggable, Offset location) {
     for (Block b in blocks) {
       if (b.isVisible) {
-        if (EditorPane.isHitting(b, location)) {
-          if(!b.isArgBlock()) {
-            print("yesss");
-            indicator?.indicateNextBlock(b);
-          }
-          break;
-        } else {
-          indicator?.indicateNextBlock(null);
+        String? dropType =
+            getDropRegionType(b, draggable, location, indicator!);
+        switch (dropType) {
+          case "N":
+            b.indicateNext(indicator!);
+            return;
+          case "A":
+            b.indicateSubA(indicator!);
+            return;
+          case "B":
+            b.indicateSubB(indicator!);
+            return;
+          default:
+            indicator?.set(() {
+              indicator?.width = 0;
+              indicator?.height = 0;
+              indicator?.isVisible = false;
+            });
+            
         }
       }
     }
+  }
+
+  String? getDropRegionType(Block? droppable, Block draggable,
+      Offset dragLocation, ArgIndicator indicator) {
+    Rect draggingPos = Rect.fromLTWH(dragLocation.dx, dragLocation.dy, 20, 10);
+    Rect droppingPos = Rect.fromLTWH(
+        droppable!.x!, droppable.y! + droppable.getTotalHeight(), 30, 20);
+
+    if (draggingPos.overlaps(droppingPos)) {
+      //next block
+      droppable.indicateNext(indicator);
+      return "N";
+    } else {
+      Rect droppingPos =
+          Rect.fromLTWH(droppable.substackX(), droppable.subAY(), 30, 20);
+      if (draggingPos.overlaps(droppingPos)) {
+        //suba
+        droppable.indicateSubA(indicator);
+        return "A";
+      } else {
+        droppingPos =
+            Rect.fromLTWH(droppable.substackX(), droppable.subBY(), 30, 20);
+        if (draggingPos.overlaps(droppingPos)) {
+          droppable.indicateSubB(indicator);
+          return "B";
+        }
+      }
+    }
+    return null;
   }
 
   @override

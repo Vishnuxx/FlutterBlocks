@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/Widgets/arg_indicatior.dart';
 import 'package:flutter_application_1/Widgets/block.dart';
 import 'package:flutter_application_1/Widgets/block_args.dart';
 
@@ -29,5 +30,14 @@ abstract class BlockMethods {
 
   bool isArgBlock();
 
-  
+  double getTotalHeight();
+  double substackX();
+  double subAY();
+  double subBY();
+
+  void indicateNext(ArgIndicator indicator);
+  void indicateSubA(ArgIndicator indicator);
+  void indicateSubB(ArgIndicator indicator);
+  void indicatePrevious(ArgIndicator indicator);
+  void indicateasParent(ArgIndicator indicator);
 }

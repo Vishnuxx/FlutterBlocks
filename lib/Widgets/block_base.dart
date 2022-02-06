@@ -11,7 +11,10 @@ class Base extends StatelessWidget {
   double width;
   double subAH;
   double subBH;
+  bool emboss;
   late DrawBlock _block;
+
+  static const double _substackInset = 15;
 
   Base(
       {Key? key,
@@ -19,12 +22,14 @@ class Base extends StatelessWidget {
       this.topH = 20,
       this.width = 80,
       this.color = Colors.amber,
-      this.subAH = 20,
-      this.subBH = 20})
+      this.subAH = 10,
+      this.subBH = 10,
+      this.emboss = true})
       : super(key: key) {
     _block = DrawBlock(
-      showEmboss: true,
+        showEmboss: true,
         blockColor: color,
+        embossIntensity: 0.5,
         type: type,
         width: (width >= 80) ? width : 80,
         topH: (topH >= 20) ? topH : 20,
@@ -32,12 +37,30 @@ class Base extends StatelessWidget {
         substack2Height: (subBH >= 10) ? subBH : 10);
   }
 
+  double getTotalHeight() {
+    return _block.getTotalHeight();
+  }
+
+  double substackX() {
+    return Base._substackInset;
+  }
+
+  double subAY() {
+    return _block.topH - DrawBlock.EDGE_INSET;
+  }
+
+  double subBY() {
+    return topH + subAH + (3 * DrawBlock.EDGE_INSET) + 10;
+  }
+
+ 
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: width,
-      height: _block.getTotalHeight(),
-      child: CustomPaint(painter: _block));
+        width: width,
+        height: getTotalHeight(),
+        child: CustomPaint(painter: _block));
   }
 }
 

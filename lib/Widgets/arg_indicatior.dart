@@ -36,6 +36,13 @@ class ArgIndicator extends StatefulWidget {
     });
   }
 
+  void set(void Function() callback) {
+   
+    _state.setState(() {
+      callback();
+    });
+  }
+
   void indicateArg(BlockArg? arg) {
     if (arg != null) {
       RenderBox box2;
@@ -72,13 +79,38 @@ class ArgIndicator extends StatefulWidget {
       final pos = EditorPane.toRelativeOffset(box2.localToGlobal(Offset.zero));
       _state.setState(() {
         x = pos.dx;
-        y = pos.dy + _block.topH;
+        y = pos.dy + _block.getTotalHeight();
         type = "b";
         height = 5;
         width = _block.width;
         isVisible = true;
       });
-      
+    } else {
+      _state.setState(() {
+        width = 0;
+        height = 0;
+        x = 0;
+        y = 0;
+        isVisible = false;
+      });
+    }
+  }
+
+  void indicateSubA(Block? _block) {
+    if (_block != null) {
+      RenderBox box2;
+      box2 = (_block.key as GlobalKey).currentContext?.findRenderObject()
+          as RenderBox;
+      final size2 = box2.size;
+      final pos = EditorPane.toRelativeOffset(box2.localToGlobal(Offset.zero));
+      _state.setState(() {
+        x = pos.dx;
+        y = pos.dy;
+        type = "b";
+        height = 5;
+        width = _block.width - _block.substackX();
+        isVisible = true;
+      });
     } else {
       _state.setState(() {
         width = 0;

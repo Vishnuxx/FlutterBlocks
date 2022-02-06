@@ -35,11 +35,7 @@ class LogicEditor extends StatelessWidget {
       alignment: Alignment.topLeft,
       child: Row(
         children: [
-          ElevatedButton(
-              onPressed: () {
-                editorPane.addBlock(generateBlock(GlobalKey(), x, y));
-              },
-              child: const Text("ADD")),
+         
           Container(
             width: 250,
             color: const Color(0xffe0e0e0),

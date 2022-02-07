@@ -38,7 +38,7 @@ class Base extends StatelessWidget {
   }
 
   double getTotalHeight() {
-    return _block.getTotalHeight();
+    return _block.getTotalHeight() ;
   }
 
   double substackX() {

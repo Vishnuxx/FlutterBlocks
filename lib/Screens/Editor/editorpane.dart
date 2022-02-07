@@ -3,6 +3,7 @@ import 'package:flutter_application_1/Screens/Editor/logic_editor_data.dart';
 import 'package:flutter_application_1/Widgets/arg_indicatior.dart';
 import 'package:flutter_application_1/Widgets/block.dart';
 import 'package:flutter_application_1/Widgets/block_args.dart';
+import 'package:flutter_application_1/Widgets/draw_block.dart';
 import 'package:flutter_application_1/Widgets/droppable_regions.dart';
 
 // ignore: must_be_immutable
@@ -16,11 +17,14 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
   List<Widget> helpers = [];
   ArgIndicator? indicator;
   Widget? currentDropZone; //returns the current drop zone
+  String? dropZoneType;
 
   EditorPane({Key? key, this.editor, this.width, this.height})
       : super(key: key) {
     currentDropZone = this;
   }
+
+  
 
   void addHelper(Widget helper) {
     // ignore: invalid_use_of_protected_member
@@ -33,6 +37,7 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
   void addBlock(Block block) {
     // ignore: invalid_use_of_protected_member
     _state.setState(() {
+      block.isInEditor = true;
       blocks.add(block);
     });
   }
@@ -83,77 +88,128 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
       if (b.isVisible) {
         if (EditorPane.isHitting(b, details)) {
           BlockArg? arg = b.getArgAtLocation(details);
-
-          if (arg != null && draggable.isArgBlock() && !(arg is EditorPane)) {
+          if (arg != null &&
+              draggable.isArgBlock() &&
+              arg.type == draggable.type &&
+              !(arg is EditorPane)) {
             indicator?.indicateArg(arg); //shows the indicztor
             currentDropZone = arg;
             return;
           } else {
             indicator?.indicateArg(null); //hides the indictor
           }
-        } else {
-          print(false);
         }
       }
     }
     currentDropZone = this;
   }
 
+  String? getDropRegionType(Block? droppable, Block draggable,
+      Offset dragLocation, ArgIndicator indicator) {
+    Rect draggingPos = Rect.fromLTWH(dragLocation.dx, dragLocation.dy, 20, 10);
+    Rect droppingPos;
+
+    //next block
+    droppingPos = Rect.fromLTWH(
+        droppable!.x!, droppable.y! + droppable.getTotalHeight(), 30, 20);
+    if (draggingPos.overlaps(droppingPos)) {
+      return "NEXT";
+    }
+
+    //Previous
+    droppingPos = Rect.fromLTWH(
+        droppable.x!,
+        droppable.y! - draggable.getTotalHeight(),
+        30,
+        draggable.getTotalHeight());
+    if (draggingPos.overlaps(droppingPos)) {
+      return "PREVIOUS";
+    }
+
+    //Wrap
+    droppingPos = Rect.fromLTWH(droppable.x! - DrawBlock.SUBSTACK_INSET,
+        droppable.y! - draggable.topH, 30, 20);
+    if (draggingPos.overlaps(droppingPos)) {
+      return "WRAP";
+    }
+
+    //suba
+    droppingPos =
+        Rect.fromLTWH(droppable.substackX(), droppable.subAY(), 30, 20);
+    if (draggingPos.overlaps(droppingPos)) {
+      return "SUBA";
+    }
+
+    //SubB
+    droppingPos =
+        Rect.fromLTWH(droppable.substackX(), droppable.subBY(), 30, 20);
+    if (draggingPos.overlaps(droppingPos)) {
+      return "SUBB";
+    }
+
+    return null;
+  }
+
   //triggers and highlights the dropzone for statement blocks
   void findStatementBlockDropZone(Block draggable, Offset location) {
     for (Block b in blocks) {
       if (b.isVisible) {
-        String? dropType =
-            getDropRegionType(b, draggable, location, indicator!);
-        switch (dropType) {
-          case "N":
-            b.indicateNext(indicator!);
-            return;
-          case "A":
-            b.indicateSubA(indicator!);
-            return;
-          case "B":
-            b.indicateSubB(indicator!);
-            return;
-          default:
-            indicator?.set(() {
-              indicator?.width = 0;
-              indicator?.height = 0;
-              indicator?.isVisible = false;
-            });
-            
+        if (draggable.isArgBlock()) {
+
+          if (EditorPane.isHitting(b, location)) {
+            BlockArg? arg = b.getArgAtLocation(location);
+            if (arg != null &&
+                draggable.isArgBlock() &&
+                arg.type == draggable.type &&
+                !(arg is EditorPane)) {
+              indicator?.indicateArg(arg); //shows the indicztor
+              currentDropZone = arg;
+              return;
+            } else {
+              indicator?.indicateArg(null); //hides the indictor
+            }
+          }
+          
+        } else {
+          String? dropType =
+              getDropRegionType(b, draggable, location, indicator!);
+          switch (dropType) {
+            case "NEXT":
+              dropZoneType = "NEXT";
+              currentDropZone = b;
+              b.indicateNext(indicator!, draggable);
+              return;
+            case "PREVIOUS":
+              dropZoneType = "PREVIOUS";
+              currentDropZone = b;
+              b.indicatePrevious(indicator!, draggable);
+              return;
+            case "SUBA":
+              dropZoneType = "SUBA";
+              currentDropZone = b;
+              b.indicateSubA(indicator!);
+              return;
+            case "SUBB":
+              dropZoneType = "SUBB";
+              currentDropZone = b;
+              b.indicateSubB(indicator!);
+              return;
+            case "WRAP":
+              dropZoneType = "WRAP";
+              currentDropZone = b;
+              b.indicateasParent(indicator!, draggable);
+              return;
+            default:
+              dropZoneType = null;
+              indicator?.set(() {
+                indicator?.width = 0;
+                indicator?.height = 0;
+                indicator?.isVisible = false;
+              });
+          }
         }
       }
     }
-  }
-
-  String? getDropRegionType(Block? droppable, Block draggable,
-      Offset dragLocation, ArgIndicator indicator) {
-    Rect draggingPos = Rect.fromLTWH(dragLocation.dx, dragLocation.dy, 20, 10);
-    Rect droppingPos = Rect.fromLTWH(
-        droppable!.x!, droppable.y! + droppable.getTotalHeight(), 30, 20);
-
-    if (draggingPos.overlaps(droppingPos)) {
-      //next block
-      droppable.indicateNext(indicator);
-      return "N";
-    } else {
-      Rect droppingPos =
-          Rect.fromLTWH(droppable.substackX(), droppable.subAY(), 30, 20);
-      if (draggingPos.overlaps(droppingPos)) {
-        //suba
-        droppable.indicateSubA(indicator);
-        return "A";
-      } else {
-        droppingPos =
-            Rect.fromLTWH(droppable.substackX(), droppable.subBY(), 30, 20);
-        if (draggingPos.overlaps(droppingPos)) {
-          droppable.indicateSubB(indicator);
-          return "B";
-        }
-      }
-    }
-    return null;
   }
 
   @override

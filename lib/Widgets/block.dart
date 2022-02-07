@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_application_1/Screens/Editor/editorpane.dart';
 import 'package:flutter_application_1/Screens/Editor/logic_editor.dart';
 import 'package:flutter_application_1/Widgets/arg_indicatior.dart';
@@ -45,10 +46,18 @@ class Block extends StatefulWidget implements BlockMethods {
 
   LogicEditor editor;
 
+  Block? subA;
+  Block? subB;
+  Block? parentSubA;
+  Block? parentSubB;
+
+  int _depth = 0;
+
   Block(this.editor,
       {Key? key,
       this.isFromPallette = false,
       this.isDraggable = false,
+      this.isInEditor = false,
       this.specs = "",
       this.x,
       this.y,
@@ -62,26 +71,15 @@ class Block extends StatefulWidget implements BlockMethods {
       this.onDragStart,
       this.onDragMove,
       this.onDragEnd})
-      : super(key: key);
-
-  void update() {
-    // ignore: invalid_use_of_protected_member
-    _state.setState(() {
-      isVisible = isVisible;
-      _blockSpec = _blockSpec;
-      x = x;
-      y = y;
-      topH = topH;
-      width = width;
-      subAH = subAH;
-      subBH = subBH;
-    });
-  }
-
-  setColor(Color _color) {
-    _state.setState(() {
-      color = _color;
-    });
+      : super(key: key) {
+    _blockSpec = BlockSpec(
+      args: specs,
+      block: this,
+      onSizeChanged: (p0) {
+        // widget.width = p0.width;
+        // widget.topH = p0.height;
+      },
+    );
   }
 
   @override
@@ -96,29 +94,48 @@ class Block extends StatefulWidget implements BlockMethods {
   // ignore: no_logic_in_create_state
   State<Block> createState() => _state;
 
+//
+
+//___________SETTERS__________
+
+//
+
   @override
-  Block? getNext() {
-    return _next;
+  void setDepth(int depth) {
+    _depth = depth;
   }
 
   @override
-  Widget? getParent() {
-    return _parent;
+  void setParent(Widget? parent) {
+    _parent = parent;
+  }
+
+  @override //places this next to 'next'
+  void nextOf(Block block) {
+    block._next = this;
+    _previous = block;
+    _depth = block.getDepth();
   }
 
   @override
-  Block? getPrevious() {
-    return _previous;
+  void previousOf(Block block) {
+    block._previous = this;
+    _next = block;
+    _depth = block._depth;
   }
 
   @override
-  void next(Block next) {
-    _next = next;
+  void toSubstackAOf(Block block) {
+    _previous = null;
+    block.subA = this;
+    parentSubA = block;
   }
 
   @override
-  void previous(Block previus) {
-    _previous = previus;
+  void toSubstackBOf(Block block) {
+    _previous = null;
+    block.subA = this;
+    parentSubA = block;
   }
 
   @override
@@ -137,34 +154,192 @@ class Block extends StatefulWidget implements BlockMethods {
     switch (parent.runtimeType.toString()) {
       case "EditorPane":
         _parent = parent;
+        setDepth(0);
         (parent as EditorPane).addBlock(this);
-
         break;
       case "BlockArg":
         _parent = parent;
+        setDepth((parent as BlockArg).parentBlock!.getDepth() +
+            1); //increase the depth
         (parent as BlockArg).addBlock(this);
 
         break;
     }
-    print("dropped");
+  }
+
+  void setPositioned(bool pos) {
+    _state.setState(() {
+      isInEditor = pos;
+    });
   }
 
   @override
-  Block? getSubstackA() => throw UnimplementedError();
-
-  @override
-  Block? getSubstackB() => throw UnimplementedError();
-
-  @override
-  void substackA(Block subA) {
-    // ignore: todo
-    // TODO: implement substackA
+  void indicateNext(ArgIndicator indicator, Block draggable) {
+    if (getNext() != null) {
+      indicator.type = "i";
+    } else {
+      switch (draggable.type) {
+        case "r":
+          indicator.type = "r";
+          indicator.height = 20;
+          break;
+        case "e":
+          indicator.type = "e";
+          indicator.height = 20;
+          break;
+        case "f":
+          indicator.type = "f";
+          indicator.height = 20;
+          break;
+        case "x":
+          indicator.type = "x";
+          indicator.height = 20;
+          break;
+        default:
+          indicator.type = "r";
+          indicator.height = 20;
+          break;
+      }
+    }
+    indicator.set(() {
+      indicator.x = x!;
+      indicator.y = y! + getTotalHeight();
+      indicator.width = width;
+      indicator.subAH = 10;
+      indicator.height = indicator.height;
+      indicator.isVisible = true;
+      indicator.type = indicator.type;
+    });
   }
 
   @override
-  void substackB(Block subB) {
-    // ignore: todo
-    // TODO: implement substackB
+  void indicatePrevious(ArgIndicator indicator, Block draggable) {
+    if (getPrevious() == null) {
+      switch (draggable.type) {
+        case "r":
+          indicator.type = "r";
+          indicator.height = draggable.topH;
+          indicator.y = y! - indicator.height;
+          break;
+        case "e":
+          indicator.type = "e";
+          indicator.height = 20;
+          indicator.y = y! - indicator.getTotalHeight();
+          break;
+        case "f":
+          indicator.type = "f";
+          indicator.height = 20;
+          indicator.y = y! - indicator.getTotalHeight();
+          break;
+
+        default:
+          return;
+      }
+    }
+    indicator.set(() {
+      indicator.x = x!;
+      indicator.y = indicator.y;
+      indicator.width = width;
+      indicator.height = indicator.height;
+      indicator.subAH = 10;
+      indicator.type = indicator.type;
+      indicator.isVisible = true;
+    });
+  }
+
+  @override
+  void indicateSubA(ArgIndicator indicator) {
+    if (type == "e" || type == "f") {
+      indicator.set(() {
+        print("object");
+        indicator.x = substackX();
+        indicator.y = subAY();
+        indicator.width = width - DrawBlock.SUBSTACK_INSET;
+        indicator.height = 5;
+        indicator.isVisible = true;
+        indicator.type = "i";
+      });
+    }
+  }
+
+  @override
+  void indicateSubB(ArgIndicator indicator) {
+    if (type == "e") {
+      indicator.set(() {
+        indicator.x = substackX();
+        indicator.y = subBY();
+        indicator.width = width - DrawBlock.SUBSTACK_INSET;
+        indicator.height = 5;
+        indicator.isVisible = true;
+        indicator.type = "i";
+      });
+    }
+  }
+
+  @override
+  void indicateasParent(ArgIndicator indicator, Block draggable) {
+    // if (getParent() == null && getPrevious() == null) {
+    if (draggable.type == "e" || draggable.type == "f") {
+      indicator.set(() {
+        indicator.x = x! - DrawBlock.SUBSTACK_INSET;
+        indicator.y = y! - draggable.topH;
+        indicator.width = draggable.width;
+        indicator.height = draggable.topH;
+        indicator.subAH = getTotalHeight() - DrawBlock.EDGE_INSET;
+        indicator.type = draggable.type;
+        indicator.isVisible = true;
+      });
+    }
+  }
+
+  @override
+  void recalculateBlock() {
+    _state.setState(() {
+      topH = topH;
+      width = _blockSpec.width;
+      _base.width = _blockSpec.width;
+      subAH = subAH;
+      subBH = subBH;
+    });
+  }
+
+  @override
+  void refreshBlocks() {
+    if (_parent != null && !(_parent is EditorPane)) {
+      recalculateBlock();
+      (_parent as BlockArg).parentBlock?.recalculateBlock();
+    }
+  }
+
+//
+
+//__________GETTERS____________
+
+//
+
+  @override
+  bool isBranchedBlock() {
+    return type == "e" || type == "f";
+  }
+
+  @override
+  int getDepth() {
+    return _depth;
+  }
+
+  @override
+  Block? getNext() {
+    return _next;
+  }
+
+  @override
+  Widget? getParent() {
+    return _parent;
+  }
+
+  @override
+  Block? getPrevious() {
+    return _previous;
   }
 
   @override
@@ -201,97 +376,24 @@ class Block extends StatefulWidget implements BlockMethods {
     BlockArg? target;
     for (Widget arg in _blockSpec.params) {
       if (arg is BlockArg) {
-        if (EditorPane.isHitting((arg as BlockArg), location)) {
-          if ((arg).hasChildBlock()) {
-            target = ((arg).getChildBlock()!.getArgAtLocation(location) != null)
-                ? (arg).getChildBlock()!.getArgAtLocation(location)
-                : arg;
-            //target = arg;
-          } else {
-            target = arg;
+          if (EditorPane.isHitting(arg , location)) {
+            if ((arg).hasChildBlock()) {
+              target =
+                  ((arg).getChildBlock()!.getArgAtLocation(location) != null)
+                      ? (arg).getChildBlock()!.getArgAtLocation(location)
+                      : arg;
+              //target = arg;
+            } else {
+              target = arg;
+            }
+            break;
           }
-          break;
-        }
+     
       } else {
         target = null;
       }
     }
     return target;
-  }
-
-  void setPositioned(bool pos) {
-    _state.setState(() {
-      isInEditor = pos;
-    });
-  }
-
-  @override
-  void indicateNext(ArgIndicator indicator) {
-    if (getNext() != null) {
-      indicator.set(() {
-        indicator.x = x!;
-        indicator.y = y! + getTotalHeight();
-        indicator.width = width;
-        indicator.height = 5;
-        indicator.isVisible = true;
-        indicator.type = "i";
-      });
-    } else {
-      indicator.set(() {
-        indicator.x = x!;
-        indicator.y = y! + getTotalHeight();
-        indicator.width = width;
-        indicator.height = 20;
-        indicator.isVisible = true;
-        indicator.type = "r";
-      });
-    }
-  }
-
-  @override
-  void indicateSubA(ArgIndicator indicator) {
-    if (type == "e" || type == "f") {
-      indicator.set(() {
-        print("object");
-        indicator.x = substackX();
-        indicator.y = subAY();
-        indicator.width = width - DrawBlock.SUBSTACK_INSET;
-        indicator.height = 5;
-        indicator.isVisible = true;
-        indicator.type = "i";
-      });
-    }
-  }
-
-  @override
-  void indicateSubB(ArgIndicator indicator) {
-    if (type == "e") {
-      indicator.set(() {
-        indicator.x = substackX();
-        indicator.y = subBY();
-        indicator.width = width - DrawBlock.SUBSTACK_INSET;
-        indicator.height = 5;
-        indicator.isVisible = true;
-        indicator.type = "i";
-      });
-    }
-  }
-
-  @override
-  void indicatePrevious(ArgIndicator indicator) {
-    indicator.set(() {
-      indicator.x = substackX();
-      indicator.y = subBY();
-      indicator.width = width - DrawBlock.SUBSTACK_INSET;
-      indicator.height = 5;
-      indicator.isVisible = true;
-      indicator.type = "i";
-    });
-  }
-
-  @override
-  void indicateasParent(ArgIndicator indicator) {
-    // TODO: implement indicateasParent
   }
 }
 
@@ -314,15 +416,8 @@ class _BlockState extends State<Block> {
 
   @override
   void initState() {
+    widget.isInEditor = widget.isInEditor;
     super.initState();
-
-    widget._blockSpec = BlockSpec(
-      args: widget.specs,
-      onSizeChanged: (p0) {
-        widget.width = p0.width;
-        widget.topH = p0.height;
-      },
-    );
   }
 
   Widget dragFeedback() {
@@ -389,7 +484,15 @@ class _BlockState extends State<Block> {
                       widget.width = size.width;
                     });
                   },
-                  child: widget._blockSpec),
+                  child: BlockSize(
+                    child: widget._blockSpec,
+                    onChange: (size) {
+                      setState(() {
+                        widget.width = widget.width;
+                        widget.topH = size.height;
+                      });
+                    },
+                  )),
             ],
           ),
         ),
@@ -399,6 +502,12 @@ class _BlockState extends State<Block> {
 
   @override
   Widget build(BuildContext context) {
+    SchedulerBinding.instance?.addPostFrameCallback((_) {
+      setState(() {
+        widget.isInEditor = widget.isInEditor;
+        widget._base.width = widget._blockSpec.width;
+      });
+    });
     widget._base = Base(
       type: widget.type,
       topH: widget.topH,
@@ -407,13 +516,12 @@ class _BlockState extends State<Block> {
       subAH: widget.subAH,
       subBH: widget.subBH,
     );
+
     if (widget.isDraggable) {
       if (widget.isFromPallette) {
-        // ____________IS FROM PALLETTE____________
         return mBlock();
       } else {
         if (widget.isInEditor) {
-          //_______IS NOT FROM PALLETTE___________
           return Positioned(left: widget.x, top: widget.y, child: mBlock());
         } else {
           return mBlock();
@@ -427,17 +535,9 @@ class _BlockState extends State<Block> {
         child: Wrap(
           children: [
             Stack(
-              fit: StackFit.passthrough,
               children: [
                 widget._base,
-                BlockSize(
-                    onChange: (size) {
-                      setState(() {
-                        widget.topH = size.height;
-                        widget.width = size.width;
-                      });
-                    },
-                    child: widget._blockSpec),
+                widget._blockSpec,
               ],
             ),
           ],

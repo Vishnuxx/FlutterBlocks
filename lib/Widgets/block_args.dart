@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_application_1/Screens/Editor/editorpane.dart';
 import 'package:flutter_application_1/Widgets/block.dart';
 import 'package:flutter_application_1/Widgets/block_size.dart';
@@ -15,25 +16,40 @@ class BlockArg extends StatefulWidget implements DroppableRegion {
   String? type;
   double? width;
   double? height;
+  Block? parentBlock;
 
-  BlockArg({
-    Key? key,
-    this.type = "s",
-    this.width = 30,
-    this.height = 20,
-  }) : super(key: key);
+  BlockArg(
+      {Key? key,
+      this.type = "s",
+      this.width = 30,
+      this.height = 20,
+      this.parentBlock})
+      : super(key: key);
+
+  bool isHitting(Offset coordinate) {
+    RenderBox box2 =
+        (key as GlobalKey).currentContext?.findRenderObject() as RenderBox;
+    Rect draggingPos = Rect.fromLTWH(coordinate.dx, coordinate.dy, 30, 20);
+    final pos = EditorPane.toRelativeOffset(box2.localToGlobal(Offset.zero));
+    Rect droppingPos = Rect.fromLTWH(pos.dx, pos.dy, 30, 20);
+
+    return droppingPos.overlaps(draggingPos);
+  }
 
   @override //add
   void addBlock(Block block) {
     if (canAcceptBlockOfType(block.type)) {
       // ignore: invalid_use_of_protected_member
+      block.isInEditor = false;
+      block.x = 0;
+      block.y = 0;
+      _child = block;
+
       _state.setState(() {
-        block.x = 0;
-        block.y = 0;
-        _child = block;
-         width = block.width;
+        width = block.width;
         height = block.topH;
       });
+      //parentBlock?.refreshBlocks();
     } else {
       print("already has child block");
     }
@@ -44,7 +60,7 @@ class BlockArg extends StatefulWidget implements DroppableRegion {
     // ignore: invalid_use_of_protected_member
     _state.setState(() {
       _child = null;
-        width = 30;
+      width = 30;
       height = 20;
     });
   }
@@ -69,8 +85,6 @@ class BlockArg extends StatefulWidget implements DroppableRegion {
 }
 
 class _BlockArgState extends State<BlockArg> {
-
-  
   String _argType(String type) {
     String t = "s";
     switch (type) {
@@ -84,35 +98,35 @@ class _BlockArgState extends State<BlockArg> {
     return t;
   }
 
+  Widget getBlock() {
+    if (widget._child != null) {
+      return widget._child!;
+    } else {
+      return SizedBox(
+          width: (widget.width! < 30) ? 30 : widget.width,
+          height: (widget.height! < 20) ? 20 : widget.height,
+          child: null);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    Widget wid = BlockSize(
-      child: Wrap(
-        direction: Axis.horizontal,
-        children: [
+    return BlockSize(
+        child: Wrap(direction: Axis.horizontal, children: [
           CustomPaint(
               painter: DrawBlock(
                   blockColor: (widget._trigger) ? Colors.red : widget.color!,
                   type: _argType(widget.type!),
-                  width: widget.width!,
-                  topH: widget.height!)),
-          SizedBox(
-              width: widget.width, height: widget.height, child: widget._child),
-        ],
-      ),
-      onChange: (size) {
-        if (widget._child != null) {
-          setState(() {
-            widget.width = size.width;
-            widget.height = size.height;
-          });
-        } else {
-          widget.height = 20;
-          widget.width = 30;
-        }
-      },
-    );
-
-    return wid;
+                  width: (widget._child != null)?  widget.width! : 30 ,
+                  topH: (widget._child != null)? widget.height! : 20)),
+          Stack(children: [
+            SizedBox(width: 30, height: 20, child: null),
+            getBlock()
+          ])
+        ]),
+        onChange: (size) {
+          widget.width = size.width;
+          widget.height = size.height;
+        });
   }
 }

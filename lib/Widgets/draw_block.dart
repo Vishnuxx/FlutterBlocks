@@ -31,16 +31,16 @@ class DrawBlock extends CustomPainter {
   double topH;
 
   //substack
-  double substack1Height = 20;
-  double substack2Height = 20;
+  double substack1Height = 10;
+  double substack2Height = 10;
 
   DrawBlock(
       {this.blockColor = Colors.amber,
       this.type,
       this.width = 10,
       this.topH = 10,
-      this.substack1Height = 20,
-      this.substack2Height = 20,
+      this.substack1Height = 10,
+      this.substack2Height = 10,
       this.showEmboss = false,
       this.embossIntensity = 0.5}) {
     MIN_WIDTH = (4 * EDGE_INSET) + TOP_OUTSET_LENGTH + NOTCH_LENGTH;
@@ -76,7 +76,7 @@ class DrawBlock extends CustomPainter {
   double getTotalHeight() {
     switch (type) {
       case "e": //if-else
-        return 5 * EDGE_INSET + 20 + topH + substack1Height + substack2Height;
+        return 6 * EDGE_INSET + 20 + topH + substack1Height + substack2Height;
       case "f": //if
         return 3 * EDGE_INSET + 10 + topH + substack1Height;
       case "r": //regular

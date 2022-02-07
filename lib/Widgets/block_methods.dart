@@ -8,21 +8,21 @@ abstract class BlockMethods {
   //parent
   void dropTo(Widget parent);
 
+  void setParent(Widget? parent);
   Widget? getParent();
 
   //next
-  void next(Block next);
+  void nextOf(Block block);
   Block? getNext();
 
   //previous
-  void previous(Block previus);
+  void previousOf(Block block);
   Block? getPrevious();
 
-  void substackA(Block subA);
-  Block? getSubstackA();
+  void toSubstackAOf(Block block);
+  void toSubstackBOf(Block block);
 
-  void substackB(Block subB);
-  Block? getSubstackB();
+  bool isBranchedBlock();//returns true if it has substacks
 
   BlockArg? getArgAtLocation(Offset location);
 
@@ -35,9 +35,15 @@ abstract class BlockMethods {
   double subAY();
   double subBY();
 
-  void indicateNext(ArgIndicator indicator);
+  void indicateNext(ArgIndicator indicator, Block draggable);
   void indicateSubA(ArgIndicator indicator);
   void indicateSubB(ArgIndicator indicator);
-  void indicatePrevious(ArgIndicator indicator);
-  void indicateasParent(ArgIndicator indicator);
+  void indicatePrevious(ArgIndicator indicator, Block draggable);
+  void indicateasParent(ArgIndicator indicator, Block draggable);
+
+  void setDepth(int depth);
+  int getDepth();
+
+  void recalculateBlock();
+  void refreshBlocks();
 }

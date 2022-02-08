@@ -92,23 +92,23 @@ class ArgIndicator extends StatefulWidget implements ArgIndicatorMethods {
       switch (draggable.type) {
         case "r":
           type = "r";
-          height = 20;
+          height = draggable.getTotalHeight();
           break;
         case "e":
           type = "e";
-          height = 20;
+          height = draggable.topH;
           break;
         case "f":
           type = "f";
-          height = 20;
+          height = draggable.topH;
           break;
         case "x":
           type = "x";
-          height = 20;
+          height = draggable.topH;
           break;
         default:
           type = "r";
-          height = 20;
+          height = draggable.topH;
           break;
       }
     }
@@ -130,17 +130,17 @@ class ArgIndicator extends StatefulWidget implements ArgIndicatorMethods {
         case "r":
           type = "r";
           height = draggable.topH;
-          y = droppable.y! - height;
+          y = droppable.y! - draggable.topH;
           break;
         case "e":
           type = "e";
-          height = 20;
-          y = droppable.y! - getTotalHeight();
+          height = draggable.topH;
+          y = droppable.y! - draggable.getTotalHeight();
           break;
         case "f":
           type = "f";
-          height = 20;
-          y = droppable.y! - getTotalHeight();
+          height = draggable.topH;
+          y = droppable.y! - draggable.getTotalHeight();
           break;
 
         default:
@@ -150,10 +150,9 @@ class ArgIndicator extends StatefulWidget implements ArgIndicatorMethods {
     _state.setState(() {
       x = droppable.x!;
       y = y;
-      width = droppable.width;
+      width = draggable.width;
       height = height;
       subAH = 10;
-      subBH = 10;
       type = type;
       isVisible = true;
     });

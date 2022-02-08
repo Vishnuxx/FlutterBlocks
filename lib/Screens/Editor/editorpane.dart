@@ -126,29 +126,7 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
     return null;
   }
 
-// // used to find block args from editor
-//   void findBlockArgs(Block draggable, Offset details) {
-//     for (Block b in blocks) {
-//       if (b.isVisible) {
-//         // if (draggable.isArgBlock()) {
-//         if (EditorPane.isHitting(b, details)) {
-//           BlockArg? arg = b.getArgAtLocation(details);
-//           if (arg != null &&
-//               draggable.isArgBlock() &&
-//               arg.type == draggable.type &&
-//               !(arg is EditorPane)) {
-//             indicator?.indicateArg(arg); //shows the indicztor
-//             currentDropZone = arg;
-//             return;
-//           } else {
-//             indicator?.indicateArg(null); //hides the indictor
-//           }
-//         }
-//       }
-//       // }
-//     }
-//     currentDropZone = this;
-//   }
+
 
   //triggers and highlights the dropzone for statement blocks
   void findStatementBlockDropZone(Block draggable, Offset location) {
@@ -160,7 +138,7 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
             if (arg != null &&
                 draggable.isArgBlock() &&
                 arg.type == draggable.type &&
-                !(arg is EditorPane)) {
+                arg is! EditorPane) {
               indicator?.indicateArg(arg); //shows the indicztor
               currentDropZone = arg;
               return;
@@ -204,6 +182,7 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
               return;
             default:
               dropZoneType = null;
+              currentDropZone = this;
               indicator?.set(() {
                 indicator?.width = 0;
                 indicator?.height = 0;

@@ -192,8 +192,8 @@ class Block extends StatefulWidget implements BlockMethods {
         setDepth(0);
         (parent as EditorPane).addBlock(this);
         print(editor.editorPane.dropZoneType);
-        if (editor.editorPane.currentDropZone is Block) {
-          dropOverBlockInType(editor.editorPane.currentDropZone as Block,
+        if (parent is Block) {
+          dropOverBlockInType(parent as Block,
               editor.editorPane.dropZoneType);
         }
 

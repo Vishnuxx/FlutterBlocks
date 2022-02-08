@@ -8,29 +8,28 @@ abstract class BlockMethods {
   //parent
   void dropTo(Widget parent);
 
+ 
+
+
   void setParent(Widget? parent);
-  Widget? getParent();
-
-  //next
   void nextOf(Block block);
-  Block? getNext();
-
-  //previous
   void previousOf(Block block);
-  Block? getPrevious();
-
   void toSubstackAOf(Block block);
   void toSubstackBOf(Block block);
-
   void wrapBy(Block block);
 
+  Block? getNext();
+  Block? getPrevious();
+  Widget? getParent();
+
+  bool isArgBlock();
   bool isBranchedBlock(); //returns true if it has substacks
 
   BlockArg? getArgAtLocation(Offset location);
 
   // bool isHitting(Offset location);
 
-  bool isArgBlock();
+
 
   double getTotalHeight();
   double substackX();
@@ -39,7 +38,7 @@ abstract class BlockMethods {
 
 
 
-  void setDepth(int depth);
+  void setDepth(int depth); //depth increase with increase in branching
   int getDepth();
 
   void recalculateBlock();

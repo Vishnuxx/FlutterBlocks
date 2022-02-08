@@ -115,7 +115,6 @@ class Block extends StatefulWidget implements BlockMethods {
     block._next = this;
     _previous = block;
     _depth = block.getDepth();
-    print("hello");
   }
 
   @override
@@ -123,7 +122,7 @@ class Block extends StatefulWidget implements BlockMethods {
     if (block._previous == null) {}
     block._previous = this;
     _next = block;
-
+    print("prev");
     _depth = block._depth;
   }
 
@@ -132,6 +131,7 @@ class Block extends StatefulWidget implements BlockMethods {
     _previous = null;
     block.subA = this;
     parentSubA = block;
+    print("suba");
   }
 
   @override
@@ -139,12 +139,14 @@ class Block extends StatefulWidget implements BlockMethods {
     _previous = null;
     block.subB = this;
     parentSubB = block;
+    print("subb");
   }
 
   @override
   void wrapBy(Block block) {
     if (_previous != null) {
       block.previousOf(_previous!);
+      print("wrap");
     }
     _previous = null;
     parentSubA = block;
@@ -189,7 +191,12 @@ class Block extends StatefulWidget implements BlockMethods {
         _parent = parent;
         setDepth(0);
         (parent as EditorPane).addBlock(this);
-       
+        print(editor.editorPane.dropZoneType);
+        if (editor.editorPane.currentDropZone is Block) {
+          dropOverBlockInType(editor.editorPane.currentDropZone as Block,
+              editor.editorPane.dropZoneType);
+        }
+
         break;
       case "BlockArg":
         _parent = parent;
@@ -207,124 +214,7 @@ class Block extends StatefulWidget implements BlockMethods {
     });
   }
 
-  @override
-  void indicateNext(ArgIndicator indicator, Block draggable) {
-    if (getNext() != null) {
-      indicator.type = "i";
-    } else {
-      switch (draggable.type) {
-        case "r":
-          indicator.type = "r";
-          indicator.height = 20;
-          break;
-        case "e":
-          indicator.type = "e";
-          indicator.height = 20;
-          break;
-        case "f":
-          indicator.type = "f";
-          indicator.height = 20;
-          break;
-        case "x":
-          indicator.type = "x";
-          indicator.height = 20;
-          break;
-        default:
-          indicator.type = "r";
-          indicator.height = 20;
-          break;
-      }
-    }
-    indicator.set(() {
-      indicator.x = x!;
-      indicator.y = y! + getTotalHeight();
-      indicator.width = width;
-      indicator.subAH = 10;
-      indicator.height = indicator.height;
-      indicator.isVisible = true;
-      indicator.type = indicator.type;
-    });
-  }
-
-  @override
-  void indicatePrevious(ArgIndicator indicator, Block draggable) {
-    if (getPrevious() == null) {
-      switch (draggable.type) {
-        case "r":
-          indicator.type = "r";
-          indicator.height = draggable.topH;
-          indicator.y = y! - indicator.height;
-          break;
-        case "e":
-          indicator.type = "e";
-          indicator.height = 20;
-          indicator.y = y! - indicator.getTotalHeight();
-          break;
-        case "f":
-          indicator.type = "f";
-          indicator.height = 20;
-          indicator.y = y! - indicator.getTotalHeight();
-          break;
-
-        default:
-          return;
-      }
-    }
-    indicator.set(() {
-      indicator.x = x!;
-      indicator.y = indicator.y;
-      indicator.width = width;
-      indicator.height = indicator.height;
-      indicator.subAH = 10;
-      indicator.type = indicator.type;
-      indicator.isVisible = true;
-    });
-  }
-
-  @override
-  void indicateSubA(ArgIndicator indicator) {
-    if (type == "e" || type == "f") {
-      indicator.set(() {
-        print("object");
-        indicator.x = substackX();
-        indicator.y = subAY();
-        indicator.width = width - DrawBlock.SUBSTACK_INSET;
-        indicator.height = 5;
-        indicator.isVisible = true;
-        indicator.type = "i";
-      });
-    }
-  }
-
-  @override
-  void indicateSubB(ArgIndicator indicator) {
-    if (type == "e") {
-      indicator.set(() {
-        indicator.x = substackX();
-        indicator.y = subBY();
-        indicator.width = width - DrawBlock.SUBSTACK_INSET;
-        indicator.height = 5;
-        indicator.isVisible = true;
-        indicator.type = "i";
-      });
-    }
-  }
-
-  @override
-  void indicateasParent(ArgIndicator indicator, Block draggable) {
-    // if (getParent() == null && getPrevious() == null) {
-    if (draggable.type == "e" || draggable.type == "f") {
-      indicator.set(() {
-        indicator.x = x! - DrawBlock.SUBSTACK_INSET;
-        indicator.y = y! - draggable.topH;
-        indicator.width = draggable.width;
-        indicator.height = draggable.topH;
-        indicator.subAH = getTotalHeight() - DrawBlock.EDGE_INSET;
-        indicator.type = draggable.type;
-        indicator.isVisible = true;
-      });
-    }
-  }
+ 
 
   @override
   void recalculateBlock() {

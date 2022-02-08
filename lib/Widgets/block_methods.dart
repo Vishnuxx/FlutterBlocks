@@ -37,11 +37,7 @@ abstract class BlockMethods {
   double subAY();
   double subBY();
 
-  void indicateNext(ArgIndicator indicator, Block draggable);
-  void indicateSubA(ArgIndicator indicator);
-  void indicateSubB(ArgIndicator indicator);
-  void indicatePrevious(ArgIndicator indicator, Block draggable);
-  void indicateasParent(ArgIndicator indicator, Block draggable);
+
 
   void setDepth(int depth);
   int getDepth();

@@ -175,27 +175,32 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
             case "NEXT":
               dropZoneType = "NEXT";
               currentDropZone = b;
-              b.indicateNext(indicator!, draggable);
+              //b.indicateNext(indicator!, draggable);
+              indicator?.indicateNext(draggable, b);
               return;
             case "PREVIOUS":
               dropZoneType = "PREVIOUS";
               currentDropZone = b;
-              b.indicatePrevious(indicator!, draggable);
+              //b.indicatePrevious(indicator!, draggable);
+              indicator?.indicatePrevious(draggable, b);
               return;
             case "SUBA":
               dropZoneType = "SUBA";
               currentDropZone = b;
-              b.indicateSubA(indicator!);
+              //b.indicateSubA(indicator!);
+              indicator?.indicateSubA(b);
               return;
             case "SUBB":
               dropZoneType = "SUBB";
               currentDropZone = b;
-              b.indicateSubB(indicator!);
+              // b.indicateSubB(indicator!);
+              indicator?.indicateSubB(b);
               return;
             case "WRAP":
               dropZoneType = "WRAP";
               currentDropZone = b;
-              b.indicateasParent(indicator!, draggable);
+              //b.indicateasParent(indicator!, draggable);
+              indicator?.indicateasParent(draggable, b);
               return;
             default:
               dropZoneType = null;

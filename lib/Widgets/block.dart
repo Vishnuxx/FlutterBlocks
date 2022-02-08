@@ -115,12 +115,15 @@ class Block extends StatefulWidget implements BlockMethods {
     block._next = this;
     _previous = block;
     _depth = block.getDepth();
+    print("hello");
   }
 
   @override
   void previousOf(Block block) {
+    if (block._previous == null) {}
     block._previous = this;
     _next = block;
+
     _depth = block._depth;
   }
 
@@ -134,8 +137,38 @@ class Block extends StatefulWidget implements BlockMethods {
   @override
   void toSubstackBOf(Block block) {
     _previous = null;
-    block.subA = this;
+    block.subB = this;
+    parentSubB = block;
+  }
+
+  @override
+  void wrapBy(Block block) {
+    if (_previous != null) {
+      block.previousOf(_previous!);
+    }
+    _previous = null;
     parentSubA = block;
+    toSubstackAOf(block);
+  }
+
+  void dropOverBlockInType(Block dropArea, String? type) {
+    switch (type) {
+      case "NEXT":
+        nextOf(dropArea);
+        break;
+      case "PREVIOUS":
+        previousOf(dropArea);
+        break;
+      case "SUBA":
+        toSubstackAOf(dropArea);
+        break;
+      case "SUBB":
+        toSubstackBOf(dropArea);
+        break;
+      case "PARENT":
+        wrapBy(dropArea);
+        break;
+    }
   }
 
   @override
@@ -156,6 +189,7 @@ class Block extends StatefulWidget implements BlockMethods {
         _parent = parent;
         setDepth(0);
         (parent as EditorPane).addBlock(this);
+       
         break;
       case "BlockArg":
         _parent = parent;
@@ -323,6 +357,11 @@ class Block extends StatefulWidget implements BlockMethods {
   }
 
   @override
+  bool isArgBlock() {
+    return type == "s" || type == "b" || type == "n" || type == "d";
+  }
+
+  @override
   int getDepth() {
     return _depth;
   }
@@ -362,33 +401,22 @@ class Block extends StatefulWidget implements BlockMethods {
     return x! + _base.substackX();
   }
 
-  @override
-  bool isArgBlock() {
-    return type == "s" ||
-        type == "b" ||
-        type == "n" ||
-        type == "m" ||
-        type == "d";
-  }
-
   @override //returns the blockarg of at a pointer location
   BlockArg? getArgAtLocation(Offset location) {
     BlockArg? target;
     for (Widget arg in _blockSpec.params) {
       if (arg is BlockArg) {
-          if (EditorPane.isHitting(arg , location)) {
-            if ((arg).hasChildBlock()) {
-              target =
-                  ((arg).getChildBlock()!.getArgAtLocation(location) != null)
-                      ? (arg).getChildBlock()!.getArgAtLocation(location)
-                      : arg;
-              //target = arg;
-            } else {
-              target = arg;
-            }
-            break;
+        if (EditorPane.isHitting(arg, location)) {
+          if ((arg).hasChildBlock()) {
+            target = ((arg).getChildBlock()!.getArgAtLocation(location) != null)
+                ? (arg).getChildBlock()!.getArgAtLocation(location)
+                : arg;
+            //target = arg;
+          } else {
+            target = arg;
           }
-     
+          break;
+        }
       } else {
         target = null;
       }

@@ -22,7 +22,9 @@ abstract class BlockMethods {
   void toSubstackAOf(Block block);
   void toSubstackBOf(Block block);
 
-  bool isBranchedBlock();//returns true if it has substacks
+  void wrapBy(Block block);
+
+  bool isBranchedBlock(); //returns true if it has substacks
 
   BlockArg? getArgAtLocation(Offset location);
 

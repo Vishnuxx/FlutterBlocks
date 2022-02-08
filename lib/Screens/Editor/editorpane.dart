@@ -24,8 +24,6 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
     currentDropZone = this;
   }
 
-  
-
   void addHelper(Widget helper) {
     // ignore: invalid_use_of_protected_member
     _state.setState(() {
@@ -82,28 +80,6 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
     return collide;
   }
 
-  // used to find block args from editor
-  void findBlockArgs(Block draggable, Offset details) {
-    for (Block b in blocks) {
-      if (b.isVisible) {
-        if (EditorPane.isHitting(b, details)) {
-          BlockArg? arg = b.getArgAtLocation(details);
-          if (arg != null &&
-              draggable.isArgBlock() &&
-              arg.type == draggable.type &&
-              !(arg is EditorPane)) {
-            indicator?.indicateArg(arg); //shows the indicztor
-            currentDropZone = arg;
-            return;
-          } else {
-            indicator?.indicateArg(null); //hides the indictor
-          }
-        }
-      }
-    }
-    currentDropZone = this;
-  }
-
   String? getDropRegionType(Block? droppable, Block draggable,
       Offset dragLocation, ArgIndicator indicator) {
     Rect draggingPos = Rect.fromLTWH(dragLocation.dx, dragLocation.dy, 20, 10);
@@ -150,12 +126,35 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
     return null;
   }
 
+// // used to find block args from editor
+//   void findBlockArgs(Block draggable, Offset details) {
+//     for (Block b in blocks) {
+//       if (b.isVisible) {
+//         // if (draggable.isArgBlock()) {
+//         if (EditorPane.isHitting(b, details)) {
+//           BlockArg? arg = b.getArgAtLocation(details);
+//           if (arg != null &&
+//               draggable.isArgBlock() &&
+//               arg.type == draggable.type &&
+//               !(arg is EditorPane)) {
+//             indicator?.indicateArg(arg); //shows the indicztor
+//             currentDropZone = arg;
+//             return;
+//           } else {
+//             indicator?.indicateArg(null); //hides the indictor
+//           }
+//         }
+//       }
+//       // }
+//     }
+//     currentDropZone = this;
+//   }
+
   //triggers and highlights the dropzone for statement blocks
   void findStatementBlockDropZone(Block draggable, Offset location) {
     for (Block b in blocks) {
       if (b.isVisible) {
         if (draggable.isArgBlock()) {
-
           if (EditorPane.isHitting(b, location)) {
             BlockArg? arg = b.getArgAtLocation(location);
             if (arg != null &&
@@ -169,7 +168,6 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
               indicator?.indicateArg(null); //hides the indictor
             }
           }
-          
         } else {
           String? dropType =
               getDropRegionType(b, draggable, location, indicator!);
@@ -210,6 +208,8 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
         }
       }
     }
+    currentDropZone = this;
+    return;
   }
 
   @override

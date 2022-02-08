@@ -144,20 +144,22 @@ class LogicEditor extends StatelessWidget {
       editorPane.findStatementBlockDropZone(draggingBlock, location);
     } else if (draggingBlock.isFromPallette && draggingBlock.isArgBlock()) {
       // from pallette and it is arg
-     // editorPane.findBlockArgs(draggingBlock, location);
-       editorPane.findStatementBlockDropZone(draggingBlock, location);
+      // editorPane.findBlockArgs(draggingBlock, location);
+      editorPane.findStatementBlockDropZone(draggingBlock, location);
     } else if (!draggingBlock.isFromPallette && !draggingBlock.isArgBlock()) {
       //not from pallette and not arg
 
       editorPane.findStatementBlockDropZone(draggingBlock, location);
     } else if (!draggingBlock.isFromPallette && draggingBlock.isArgBlock()) {
       //not from pallette but is arg
-      editorPane.findBlockArgs(draggingBlock, location);
+      editorPane.findStatementBlockDropZone(draggingBlock, location);
+      // editorPane.findBlockArgs(draggingBlock, location);
     }
   }
 
   //END
   void endDrag(Block draggingBlock) {
+    editorPane.indicator?.indicateArg(null);
     if (draggingBlock.isFromPallette && !draggingBlock.isArgBlock()) {
       // from pallette but not arg
       generateBlock(GlobalKey(), draggingBlock).dropTo(editorPane);
@@ -168,10 +170,10 @@ class LogicEditor extends StatelessWidget {
       b.dropTo(editorPane.currentDropZone!);
     } else if (!draggingBlock.isFromPallette && !draggingBlock.isArgBlock()) {
       //not from pallette and not arg
-      
+
     } else if (!draggingBlock.isFromPallette && draggingBlock.isArgBlock()) {
       //not from pallette but is arg
-
+      print(editorPane.currentDropZone!);
       draggingBlock.dropTo(editorPane.currentDropZone!);
     }
   }

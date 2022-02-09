@@ -50,7 +50,7 @@ class DrawBlock extends CustomPainter {
     mPaint.style = PaintingStyle.fill;
     mPaint.isAntiAlias = true;
 
-    _embossL.color = Colors.white.withOpacity(0.5);
+    _embossL.color = Colors.white38;
     _embossL.strokeWidth = 2 * embossIntensity;
     _embossL.style = PaintingStyle.stroke;
     _embossL.isAntiAlias = true;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_application_1/Widgets/block.dart';
-import 'package:flutter_application_1/Widgets/block_args.dart';
-import 'package:flutter_application_1/Widgets/block_size.dart';
+import 'package:flutter_application_1/Widgets/Block/block.dart';
+import 'package:flutter_application_1/Widgets/Block/block_args.dart';
+import 'package:flutter_application_1/Widgets/BlockUtils/block_size.dart';
 
 // ignore: must_be_immutable
 class BlockSpec extends StatefulWidget {
@@ -69,7 +69,7 @@ class _BlockSpecState extends State<BlockSpec> {
       });
     });
     return Padding(
-      padding: const EdgeInsets.all(2.0),
+      padding: const EdgeInsets.all(1.0),
       child: Wrap(
         children: [
           Row(

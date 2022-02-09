@@ -1,11 +1,11 @@
 // ignore_for_file: invalid_use_of_protected_member
 
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Screens/Editor/editorpane.dart';
-import 'package:flutter_application_1/Widgets/arg_indicator_methods.dart';
-import 'package:flutter_application_1/Widgets/block.dart';
-import 'package:flutter_application_1/Widgets/block_args.dart';
-import 'package:flutter_application_1/Widgets/draw_block.dart';
+import 'package:flutter_application_1/Widgets/Editor/editorpane.dart';
+import 'package:flutter_application_1/Widgets/Indicator/arg_indicator_methods.dart';
+import 'package:flutter_application_1/Widgets/Block/block.dart';
+import 'package:flutter_application_1/Widgets/Block/block_args.dart';
+import 'package:flutter_application_1/Widgets/Block/draw_block.dart';
 
 // ignore: must_be_immutable
 class ArgIndicator extends StatefulWidget implements ArgIndicatorMethods {

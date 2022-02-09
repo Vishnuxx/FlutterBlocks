@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_application_1/Screens/Editor/editorpane.dart';
+import 'package:flutter_application_1/Widgets/Editor/editorpane.dart';
 import 'package:flutter_application_1/Screens/Editor/logic_editor.dart';
-import 'package:flutter_application_1/Widgets/arg_indicatior.dart';
+import 'package:flutter_application_1/Widgets/Indicator/arg_indicatior.dart';
 
-import 'package:flutter_application_1/Widgets/block_args.dart';
-import 'package:flutter_application_1/Widgets/block_spec.dart';
-import 'package:flutter_application_1/Widgets/block_base.dart';
-import 'package:flutter_application_1/Widgets/block_methods.dart';
-import 'package:flutter_application_1/Widgets/block_size.dart';
-import 'package:flutter_application_1/Widgets/draw_block.dart';
-import 'package:flutter_application_1/Widgets/droppable_regions.dart';
+import 'package:flutter_application_1/Widgets/Block/block_args.dart';
+import 'package:flutter_application_1/Widgets/Block/block_spec.dart';
+import 'package:flutter_application_1/Widgets/Block/block_base.dart';
+import 'package:flutter_application_1/Widgets/Block/block_methods.dart';
+import 'package:flutter_application_1/Widgets/BlockUtils/block_size.dart';
+import 'package:flutter_application_1/Widgets/Block/draw_block.dart';
+import 'package:flutter_application_1/Widgets/BlockUtils/droppable_regions.dart';
 
 // ignore: must_be_immutable
 class Block extends StatefulWidget implements BlockMethods {
@@ -30,8 +30,8 @@ class Block extends StatefulWidget implements BlockMethods {
   double width;
   double? x = 0;
   double? y = 0;
-  double subAH;
-  double subBH;
+  double subAH = 0;
+  double subBH = 0;
 
   double offsetX = 0; //local touch offset X
   double offsetY = 0; //local touch offset Y
@@ -110,71 +110,61 @@ class Block extends StatefulWidget implements BlockMethods {
     _parent = parent;
   }
 
-  @override //places this next to 'next'
+  @override //places this next to 'block'
   void nextOf(Block block) {
+    Block? lastBlock = getLastBlock();
+    lastBlock._next = block._next;
+    block._next?._previous = lastBlock;
+
     block._next = this;
     _previous = block;
-    _depth = block.getDepth();
   }
 
   @override
-  void previousOf(Block block) {
-    if (block._previous == null) {}
-    block._previous = this;
-    _next = block;
-    print("prev");
-    _depth = block._depth;
-  }
+  void previousOf(Block block) {}
 
   @override
   void toSubstackAOf(Block block) {
-    _previous = null;
     block.subA = this;
-    parentSubA = block;
-    print("suba");
+    _previous = block;
   }
 
   @override
   void toSubstackBOf(Block block) {
-    _previous = null;
     block.subB = this;
-    parentSubB = block;
-    print("subb");
+    _previous = block;
   }
 
   @override
-  void wrapBy(Block block) {
-    if (_previous != null) {
-      block.previousOf(_previous!);
-      print("wrap");
-    }
-    _previous = null;
-    parentSubA = block;
-    toSubstackAOf(block);
-  }
+  void wrapBy(Block block) {}
 
   void dropOverBlockInType(Block dropArea, String? type) {
     switch (type) {
       case "NEXT":
         nextOf(dropArea);
+        print("next");
         break;
       case "PREVIOUS":
         previousOf(dropArea);
+        print("prev");
         break;
       case "SUBA":
         toSubstackAOf(dropArea);
+        print("suba");
         break;
       case "SUBB":
         toSubstackBOf(dropArea);
+        print("subb");
         break;
       case "PARENT":
         wrapBy(dropArea);
+        print("parent");
         break;
     }
   }
 
   @override
-  void dropTo(Widget parent) {
+  void remove() {
     if (_parent != null) {
       switch (_parent.runtimeType.toString()) {
         case "EditorPane":
@@ -185,17 +175,25 @@ class Block extends StatefulWidget implements BlockMethods {
           break;
       }
     }
+    _depth = 0;
+  }
+
+  @override
+  void dropTo(Widget? parent, String? droptype) {
+    remove();
 
     switch (parent.runtimeType.toString()) {
+      case "Block":
+        editor.editorPane.addBlock(this);
+        dropOverBlockInType(parent as Block, droptype!);
+        print("sjfksf");
+
+        break;
       case "EditorPane":
         _parent = parent;
         setDepth(0);
+
         (parent as EditorPane).addBlock(this);
-        print(editor.editorPane.dropZoneType);
-        if (parent is Block) {
-          dropOverBlockInType(parent as Block,
-              editor.editorPane.dropZoneType);
-        }
 
         break;
       case "BlockArg":
@@ -203,7 +201,6 @@ class Block extends StatefulWidget implements BlockMethods {
         setDepth((parent as BlockArg).parentBlock!.getDepth() +
             1); //increase the depth
         (parent as BlockArg).addBlock(this);
-
         break;
     }
   }
@@ -214,14 +211,14 @@ class Block extends StatefulWidget implements BlockMethods {
     });
   }
 
- 
-
   @override
   void recalculateBlock() {
     _state.setState(() {
+      x = x;
+      y = y;
       topH = topH;
       width = _blockSpec.width;
-      _base.width = _blockSpec.width;
+      // _base.width = _blockSpec.width;
       subAH = subAH;
       subBH = subBH;
     });
@@ -235,6 +232,49 @@ class Block extends StatefulWidget implements BlockMethods {
     }
   }
 
+  @override
+  void showChildren(bool show, double _x, double _y) {
+    Block? currentblock = this;
+    double x = _x;
+    double y = _y;
+    while (currentblock != null) {
+      currentblock.isVisible = show;
+      currentblock.x = x;
+      currentblock.y = y;
+      switch (currentblock.type) {
+        case "e":
+          if (currentblock.hasChildInSubstackA()) {
+            currentblock.subA?.showChildren(
+                show,
+                currentblock.x! + DrawBlock.SUBSTACK_INSET,
+                currentblock.y! + currentblock.topH);
+          }
+
+          if (currentblock.hasChildInSubstackB()) {
+            currentblock.subB?.showChildren(
+                show,
+                currentblock.x! + (DrawBlock.SUBSTACK_INSET),
+                currentblock.y! + currentblock.topH + currentblock.subAH + 19);
+          }
+          break;
+        case "f":
+          if (currentblock.hasChildInSubstackA()) {
+            currentblock.subA?.showChildren(
+                show,
+                currentblock.x! + DrawBlock.SUBSTACK_INSET,
+                currentblock.y! + currentblock.topH);
+          }
+          break;
+      }
+      currentblock.recalculateBlock();
+      x = currentblock.x!;
+      y += currentblock.getTotalHeight();
+      currentblock = currentblock._next;
+    }
+  }
+
+  // @override
+  // Block getAncestorBlock() {}
 //
 
 //__________GETTERS____________
@@ -249,6 +289,26 @@ class Block extends StatefulWidget implements BlockMethods {
   @override
   bool isArgBlock() {
     return type == "s" || type == "b" || type == "n" || type == "d";
+  }
+
+  @override
+  bool hasChildInSubstackA() {
+    return subA != null;
+  }
+
+  @override
+  bool hasChildInSubstackB() {
+    return subB != null;
+  }
+
+  @override
+  bool hasNext() {
+    return _next != null;
+  }
+
+  @override
+  bool hasPrevious() {
+    return _previous != null;
   }
 
   @override
@@ -272,8 +332,70 @@ class Block extends StatefulWidget implements BlockMethods {
   }
 
   @override
+  Block getLastBlock() {
+    Block? currentBlock = this;
+    while (true) {
+      print("jfk");
+      if (currentBlock?._next == null) {
+        break;
+      }
+      currentBlock = currentBlock?._next;
+    }
+    return currentBlock!;
+  }
+
+  @override
+  Block getAncestorBlock() {
+    Block currentBlock = this;
+    if (isArgBlock()) {
+      while (true) {
+        if (currentBlock._parent == EditorPane) {
+          break;
+        }
+        currentBlock.recalculateBlock();
+        currentBlock = (currentBlock._parent as BlockArg).parentBlock!;
+      }
+    }
+    int depth = _depth;
+    while (currentBlock._previous != null) {
+      if (currentBlock == currentBlock._previous?.subA ||
+          currentBlock == currentBlock._previous?.subB) {
+        if (depth > 0) {
+          depth--;
+        } else {
+          break;
+        }
+      }
+      currentBlock = currentBlock._previous!;
+    }
+    return currentBlock;
+  }
+
+  @override
   double getTotalHeight() {
-    return _base.getTotalHeight();
+    switch (type) {
+      case "e": //if-else
+        return 6 * DrawBlock.EDGE_INSET + 20 + topH + subAH + subBH;
+      case "f": //if
+        return 3 * DrawBlock.EDGE_INSET + 10 + topH + subAH;
+      case "r": //regular
+        return topH;
+      case "x": //ending
+        return topH;
+      case "b": //boolean
+        return topH;
+      case "s": //string
+        return topH;
+      case "n": //number
+        return topH;
+      default:
+        return topH;
+    }
+  }
+
+  @override
+  double nextBlockY() {
+    return y! + getTotalHeight();
   }
 
   @override
@@ -360,6 +482,9 @@ class _BlockState extends State<Block> {
             setState(() {
               widget.isVisible = (widget.isFromPallette) ? true : false;
               widget.onDragStart!(widget);
+              if (!widget.isFromPallette) {
+                widget.showChildren(false, widget.x!, widget.y!);
+              }
             });
           }
         },
@@ -380,6 +505,9 @@ class _BlockState extends State<Block> {
             setState(() {
               widget.isVisible = true;
               widget.onDragEnd!(widget, pointer);
+              if (!widget.isFromPallette) {
+                widget.showChildren(true, widget.x!, widget.y!);
+              }
             });
           }
           isTriggered = false;

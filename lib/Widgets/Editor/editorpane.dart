@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Screens/Editor/logic_editor_data.dart';
-import 'package:flutter_application_1/Widgets/arg_indicatior.dart';
-import 'package:flutter_application_1/Widgets/block.dart';
-import 'package:flutter_application_1/Widgets/block_args.dart';
-import 'package:flutter_application_1/Widgets/draw_block.dart';
-import 'package:flutter_application_1/Widgets/droppable_regions.dart';
+import 'package:flutter_application_1/Widgets/Indicator/arg_indicatior.dart';
+import 'package:flutter_application_1/Widgets/Block/block.dart';
+import 'package:flutter_application_1/Widgets/Block/block_args.dart';
+import 'package:flutter_application_1/Widgets/Block/draw_block.dart';
+import 'package:flutter_application_1/Widgets/BlockUtils/droppable_regions.dart';
 
 // ignore: must_be_immutable
 class EditorPane extends StatefulWidget implements DroppableRegion {
@@ -12,15 +11,13 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
   final _EditorPaneState _state = _EditorPaneState();
   double? width = 200;
   double? height = 300;
-  LogicEditorData? editor;
   List<Block> blocks = [];
   List<Widget> helpers = [];
   ArgIndicator? indicator;
   Widget? currentDropZone; //returns the current drop zone
   String? dropZoneType;
 
-  EditorPane({Key? key, this.editor, this.width, this.height})
-      : super(key: key) {
+  EditorPane({Key? key, this.width, this.height}) : super(key: key) {
     currentDropZone = this;
   }
 
@@ -46,38 +43,6 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
     _state.setState(() {
       blocks.remove(block);
     });
-  }
-
-  static bool onEnterInsideEditor(Offset location) {
-    final box = (EditorPane.editorpanecontext?.findRenderObject() as RenderBox);
-    final size = box.size;
-    final pos = box.localToGlobal(Offset.zero);
-    final collide = location.dx > pos.dx &&
-        location.dx < (pos.dx + size.width) &&
-        location.dy > pos.dy &&
-        location.dy < (pos.dy + size.height);
-    return collide;
-  }
-
-  static Offset toRelativeOffset(Offset offset) {
-    final mOff = (EditorPane.editorpanecontext?.findRenderObject() as RenderBox)
-        .localToGlobal(Offset.zero);
-    return offset.translate(-mOff.dx, -mOff.dy);
-  }
-
-  //returns true when hit happens
-  static bool isHitting(Widget view, Offset coordinate) {
-    RenderBox box2 =
-        (view.key as GlobalKey).currentContext?.findRenderObject() as RenderBox;
-
-    final size2 = box2.size;
-    final pos = EditorPane.toRelativeOffset(box2.localToGlobal(Offset.zero));
-    final collide = coordinate.dx > pos.dx &&
-        coordinate.dx < (pos.dx + size2.width) &&
-        coordinate.dy > pos.dy &&
-        coordinate.dy < (pos.dy + size2.height);
-
-    return collide;
   }
 
   String? getDropRegionType(Block? droppable, Block draggable,
@@ -126,8 +91,6 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
     return null;
   }
 
-
-
   //triggers and highlights the dropzone for statement blocks
   void findStatementBlockDropZone(Block draggable, Offset location) {
     for (Block b in blocks) {
@@ -147,39 +110,40 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
             }
           }
         } else {
-          String? dropType =
-              getDropRegionType(b, draggable, location, indicator!);
-          switch (dropType) {
+          switch (getDropRegionType(b, draggable, location, indicator!)) {
             case "NEXT":
               dropZoneType = "NEXT";
               currentDropZone = b;
               //b.indicateNext(indicator!, draggable);
               indicator?.indicateNext(draggable, b);
-              return;
+              break;
             case "PREVIOUS":
               dropZoneType = "PREVIOUS";
-              currentDropZone = b;
+              if (!b.hasPrevious()) {
+                currentDropZone = b;
+                indicator?.indicatePrevious(draggable, b);
+              }
               //b.indicatePrevious(indicator!, draggable);
-              indicator?.indicatePrevious(draggable, b);
-              return;
+
+              break;
             case "SUBA":
               dropZoneType = "SUBA";
               currentDropZone = b;
               //b.indicateSubA(indicator!);
               indicator?.indicateSubA(b);
-              return;
+              break;
             case "SUBB":
               dropZoneType = "SUBB";
               currentDropZone = b;
               // b.indicateSubB(indicator!);
               indicator?.indicateSubB(b);
-              return;
+              break;
             case "WRAP":
               dropZoneType = "WRAP";
               currentDropZone = b;
               //b.indicateasParent(indicator!, draggable);
               indicator?.indicateasParent(draggable, b);
-              return;
+              break;
             default:
               dropZoneType = null;
               currentDropZone = this;
@@ -188,12 +152,45 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
                 indicator?.height = 0;
                 indicator?.isVisible = false;
               });
+              break;
           }
         }
       }
     }
-    currentDropZone = this;
-    return;
+    print("current cropzone : " + currentDropZone.runtimeType.toString());
+    print("type : " + dropZoneType.toString());
+  }
+
+  static bool onEnterInsideEditor(Offset location) {
+    final box = (EditorPane.editorpanecontext?.findRenderObject() as RenderBox);
+    final size = box.size;
+    final pos = box.localToGlobal(Offset.zero);
+    final collide = location.dx > pos.dx &&
+        location.dx < (pos.dx + size.width) &&
+        location.dy > pos.dy &&
+        location.dy < (pos.dy + size.height);
+    return collide;
+  }
+
+  static Offset toRelativeOffset(Offset offset) {
+    final mOff = (EditorPane.editorpanecontext?.findRenderObject() as RenderBox)
+        .localToGlobal(Offset.zero);
+    return offset.translate(-mOff.dx, -mOff.dy);
+  }
+
+  //returns true when hit happens
+  static bool isHitting(Widget view, Offset coordinate) {
+    RenderBox box2 =
+        (view.key as GlobalKey).currentContext?.findRenderObject() as RenderBox;
+
+    final size2 = box2.size;
+    final pos = EditorPane.toRelativeOffset(box2.localToGlobal(Offset.zero));
+    final collide = coordinate.dx > pos.dx &&
+        coordinate.dx < (pos.dx + size2.width) &&
+        coordinate.dy > pos.dy &&
+        coordinate.dy < (pos.dy + size2.height);
+
+    return collide;
   }
 
   @override

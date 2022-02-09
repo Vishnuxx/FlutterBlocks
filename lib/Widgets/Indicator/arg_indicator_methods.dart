@@ -1,4 +1,4 @@
-import 'package:flutter_application_1/Widgets/block.dart';
+import 'package:flutter_application_1/Widgets/Block/block.dart';
 
 abstract class ArgIndicatorMethods {
   void indicateNext( Block draggable , Block droppable);

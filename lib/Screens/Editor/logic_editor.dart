@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Screens/Editor/editorpane.dart';
-import 'package:flutter_application_1/Screens/Editor/logic_editor_data.dart';
-import 'package:flutter_application_1/Widgets/arg_indicatior.dart';
-import 'package:flutter_application_1/Widgets/block.dart';
-import 'package:flutter_application_1/Widgets/block_args.dart';
+import 'package:flutter_application_1/Widgets/Editor/editorpane.dart';
+import 'package:flutter_application_1/Widgets/Indicator/arg_indicatior.dart';
+import 'package:flutter_application_1/Widgets/Block/block.dart';
+import 'package:flutter_application_1/Widgets/Block/block_args.dart';
+import 'package:flutter_application_1/Widgets/Renderer/block_renderer.dart';
 
 // ignore: must_be_immutable
 class LogicEditor extends StatelessWidget {
-  late LogicEditorData editorData;
+
 
   //temp
   late String type = "s";
@@ -15,18 +15,18 @@ class LogicEditor extends StatelessWidget {
   late Color colour;
   late double x;
   late double y; //
+  late BlockRenderer renderer;
 
   EditorPane editorPane = EditorPane();
 
   LogicEditor({Key? key}) : super(key: key) {
-    editorData = LogicEditorData();
-    editorPane = EditorPane(
-      editor: editorData,
-    );
+    
 
     editorPane.indicator = ArgIndicator(
       key: GlobalKey(),
     );
+
+    renderer = BlockRenderer();
   }
 
   @override
@@ -35,6 +35,11 @@ class LogicEditor extends StatelessWidget {
       alignment: Alignment.topLeft,
       child: Row(
         children: [
+          ElevatedButton(
+              onPressed: () {
+                renderer.renderBlock(editorPane.blocks[0], editorPane.blocks[0].x! , editorPane.blocks[0].y!);
+              },
+              child: Text("Render")),
           Container(
             width: 250,
             color: const Color(0xffe0e0e0),
@@ -49,7 +54,7 @@ class LogicEditor extends StatelessWidget {
                 palletteBlock("f", "regular %s s %b b %n n",
                     color: Colors.amber),
                 palletteBlock("e", "regular %s s %b b %n n",
-                    color: Colors.indigo),
+                    color: Colors.deepOrange),
                 palletteBlock("x", "regular %s s %b b %n n",
                     color: Colors.teal),
               ],
@@ -162,19 +167,20 @@ class LogicEditor extends StatelessWidget {
     editorPane.indicator?.indicateArg(null);
     if (draggingBlock.isFromPallette && !draggingBlock.isArgBlock()) {
       // from pallette but not arg
-      generateBlock(GlobalKey(), draggingBlock).dropTo(editorPane);
+      print(editorPane.dropZoneType);
+      generateBlock(GlobalKey(), draggingBlock).dropTo(editorPane.currentDropZone , editorPane.dropZoneType);
     } else if (draggingBlock.isFromPallette && draggingBlock.isArgBlock()) {
       // from pallette and it is arg
       Block? b = generateBlock(GlobalKey(), draggingBlock);
-
-      b.dropTo(editorPane.currentDropZone!);
+print(editorPane.dropZoneType);
+      b.dropTo(editorPane.currentDropZone , editorPane.dropZoneType);
     } else if (!draggingBlock.isFromPallette && !draggingBlock.isArgBlock()) {
       //not from pallette and not arg
-
+      draggingBlock.dropTo(editorPane.currentDropZone, editorPane.dropZoneType);
     } else if (!draggingBlock.isFromPallette && draggingBlock.isArgBlock()) {
       //not from pallette but is arg
-      print(editorPane.currentDropZone!);
-      draggingBlock.dropTo(editorPane.currentDropZone!);
+      print(editorPane.dropZoneType);
+      draggingBlock.dropTo(editorPane.currentDropZone , editorPane.dropZoneType);
     }
   }
 }

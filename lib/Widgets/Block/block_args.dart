@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_application_1/Screens/Editor/editorpane.dart';
-import 'package:flutter_application_1/Widgets/block.dart';
-import 'package:flutter_application_1/Widgets/block_size.dart';
-import 'package:flutter_application_1/Widgets/draw_block.dart';
-import 'package:flutter_application_1/Widgets/droppable_regions.dart';
+import 'package:flutter_application_1/Widgets/Editor/editorpane.dart';
+import 'package:flutter_application_1/Widgets/Block/block.dart';
+import 'package:flutter_application_1/Widgets/BlockUtils/block_size.dart';
+import 'package:flutter_application_1/Widgets/Block/draw_block.dart';
+import 'package:flutter_application_1/Widgets/BlockUtils/droppable_regions.dart';
 
 // ignore: must_be_immutable
 class BlockArg extends StatefulWidget implements DroppableRegion {

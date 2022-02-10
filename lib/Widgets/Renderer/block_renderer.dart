@@ -12,7 +12,7 @@ class BlockRenderer {
 
 //  should optimize
   double renderBlock(Block node, double _x, double _y) {
-    Block? currenblock = node.getAncestorBlock();
+    Block? currenblock = node;//.getAncestorBlock();
     double x = _x;
     double y = _y;
     double totalHeight = 0;

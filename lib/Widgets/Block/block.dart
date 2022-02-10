@@ -112,10 +112,6 @@ class Block extends StatefulWidget implements BlockMethods {
 
   @override //places this next to 'block'
   void nextOf(Block block) {
-    Block? lastBlock = getLastBlock();
-    lastBlock._next = block._next;
-    block._next?._previous = lastBlock;
-
     block._next = this;
     _previous = block;
   }
@@ -237,8 +233,9 @@ class Block extends StatefulWidget implements BlockMethods {
     Block? currentblock = this;
     double x = _x;
     double y = _y;
-    while (currentblock != null) {
-      currentblock.isVisible = show;
+    while (true) {
+      print("showChildren");
+      currentblock!.isVisible = show;
       currentblock.x = x;
       currentblock.y = y;
       switch (currentblock.type) {
@@ -270,6 +267,7 @@ class Block extends StatefulWidget implements BlockMethods {
       x = currentblock.x!;
       y += currentblock.getTotalHeight();
       currentblock = currentblock._next;
+       if (currentblock == null) break;
     }
   }
 
@@ -483,7 +481,7 @@ class _BlockState extends State<Block> {
               widget.isVisible = (widget.isFromPallette) ? true : false;
               widget.onDragStart!(widget);
               if (!widget.isFromPallette) {
-                widget.showChildren(false, widget.x!, widget.y!);
+               widget.showChildren(false, widget.x!, widget.y!);
               }
             });
           }
@@ -514,11 +512,11 @@ class _BlockState extends State<Block> {
         },
         child: GestureDetector(
           onTapDown: (details) {
-            setState(() {
+           // setState(() {
               widget.offsetX = details.localPosition.dx;
               widget.offsetY = details.localPosition.dy;
               isTriggered = true;
-            });
+           // });
           },
           child: Stack(
             children: [

@@ -11,8 +11,8 @@ class BlockRenderer {
   }
 
 //  should optimize
-  double renderBlock(Block node, double _x, double _y) {
-    Block? currenblock = node;//.getAncestorBlock();
+  static double renderBlock(Block node, double _x, double _y) {
+    Block? currenblock = node;
     double x = _x;
     double y = _y;
     double totalHeight = 0;

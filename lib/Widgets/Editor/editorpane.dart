@@ -10,13 +10,12 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
   final _EditorPaneState _state = _EditorPaneState();
   double? width = 200;
   double? height = 300;
- 
+
   late EditorPaneUtils paneUtils;
 
   EditorPane({Key? key, this.width, this.height}) : super(key: key) {
     paneUtils = EditorPaneUtils(this);
     paneUtils.currentDropZone = this;
-   
   }
 
   void addHelper(Widget helper) {
@@ -28,9 +27,11 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
 
   @override
   void addBlock(Block block) {
+    print("add Block");
     // ignore: invalid_use_of_protected_member
     _state.setState(() {
       block.isInEditor = true;
+      block.setParent(this);
       paneUtils.blocks.add(block);
     });
   }
@@ -53,8 +54,6 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
         location.dy < (pos.dy + size.height);
     return collide;
   }
-
- 
 
   @override
   // ignore: no_logic_in_create_state

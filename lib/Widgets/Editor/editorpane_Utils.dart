@@ -19,6 +19,71 @@ class EditorPaneUtils {
   EditorPaneUtils(this.editorPane) {
     indicator = ArgIndicator();
   }
+  
+
+  //triggers and highlights the dropzone for statement blocks
+  void findStatementBlockDropZone(Block draggable, Offset location) {
+    for (Block b in blocks) {
+      if (b.isVisible) {
+        if (draggable.isArgBlock()) {
+          if (DragUtils.isHitting(b, location)) {
+            BlockArg? arg = b.getArgAtLocation(location);
+            if (arg != null &&
+                draggable.isArgBlock() &&
+                arg.type == draggable.type &&
+                arg is! EditorPane) {
+              indicator.indicateArg(arg); //shows the indicztor
+              currentDropZone = arg;
+              return;
+            } else {
+              indicator.indicateArg(null); //hides the indictor
+            }
+          }
+        } else {
+          switch (getDropRegionType(b, draggable, location, indicator)) {
+            case "NEXT":
+              dropZoneType = "NEXT";
+              currentDropZone = b;
+              indicator.indicateNext(draggable, b);
+              return;
+            case "PREVIOUS":
+              dropZoneType = "PREVIOUS";
+              if (!b.hasPrevious()) {
+                currentDropZone = b;
+                indicator.indicatePrevious(draggable, b);
+              }
+              return;
+            case "SUBA":
+              dropZoneType = "SUBA";
+              currentDropZone = b;
+              indicator.indicateSubA(b);
+              return;
+            case "SUBB":
+              dropZoneType = "SUBB";
+              currentDropZone = b;
+              indicator.indicateSubB(b);
+              return;
+            case "WRAP":
+              dropZoneType = "WRAP";
+              currentDropZone = b;
+              indicator.indicateasParent(draggable, b);
+              return;
+            default:
+              dropZoneType = null;
+              indicator.set(() {
+                indicator.width = 0;
+                indicator.height = 0;
+                indicator.isVisible = false;
+              });
+              break;
+          }
+        }
+      }
+    }
+   currentDropZone = editorPane;
+  }
+
+
   String? getDropRegionType(Block? droppable, Block draggable,
       Offset dragLocation, ArgIndicator indicator) {
     Rect draggingPos = Rect.fromLTWH(dragLocation.dx, dragLocation.dy, 20, 10);
@@ -63,75 +128,5 @@ class EditorPaneUtils {
     }
 
     return null;
-  }
-
-  //triggers and highlights the dropzone for statement blocks
-  void findStatementBlockDropZone(Block draggable, Offset location) {
-    for (Block b in blocks) {
-      if (b.isVisible) {
-        if (draggable.isArgBlock()) {
-          if (DragUtils.isHitting(b, location)) {
-            BlockArg? arg = b.getArgAtLocation(location);
-            if (arg != null &&
-                draggable.isArgBlock() &&
-                arg.type == draggable.type &&
-                arg is! EditorPane) {
-              indicator.indicateArg(arg); //shows the indicztor
-              currentDropZone = arg;
-              return;
-            } else {
-              indicator.indicateArg(null); //hides the indictor
-            }
-          }
-        } else {
-          switch (getDropRegionType(b, draggable, location, indicator)) {
-            case "NEXT":
-              dropZoneType = "NEXT";
-              currentDropZone = b;
-              //b.indicateNext(indicator!, draggable);
-              indicator.indicateNext(draggable, b);
-              break;
-            case "PREVIOUS":
-              dropZoneType = "PREVIOUS";
-              if (!b.hasPrevious()) {
-                currentDropZone = b;
-                indicator.indicatePrevious(draggable, b);
-              }
-              //b.indicatePrevious(indicator!, draggable);
-
-              break;
-            case "SUBA":
-              dropZoneType = "SUBA";
-              currentDropZone = b;
-              //b.indicateSubA(indicator!);
-              indicator.indicateSubA(b);
-              break;
-            case "SUBB":
-              dropZoneType = "SUBB";
-              currentDropZone = b;
-              // b.indicateSubB(indicator!);
-              indicator.indicateSubB(b);
-              break;
-            case "WRAP":
-              dropZoneType = "WRAP";
-              currentDropZone = b;
-              //b.indicateasParent(indicator!, draggable);
-              indicator.indicateasParent(draggable, b);
-              break;
-            default:
-              dropZoneType = null;
-              currentDropZone = editorPane;
-              indicator.set(() {
-                indicator.width = 0;
-                indicator.height = 0;
-                indicator.isVisible = false;
-              });
-              break;
-          }
-        }
-      }
-    }
-    print("current cropzone : " + currentDropZone.runtimeType.toString());
-    print("type : " + dropZoneType.toString());
   }
 }

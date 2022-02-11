@@ -6,7 +6,8 @@ import 'package:flutter_application_1/Widgets/Block/block_args.dart';
 abstract class BlockMethods {
   void setVisibility(bool visible);
   //parent
-  void dropTo(Widget parent, String dropType);
+  void dropTo(Widget target, String dropType);
+  void dropToArg(BlockArg arg);
 
   void remove();
   void showChildren(bool show, double _x, double _y);

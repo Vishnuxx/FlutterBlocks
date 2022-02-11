@@ -38,21 +38,13 @@ class BlockArg extends StatefulWidget implements DroppableRegion {
 
   @override //add
   void addBlock(Block block) {
-    if (canAcceptBlockOfType(block.type)) {
-      // ignore: invalid_use_of_protected_member
-      block.isInEditor = false;
-      block.x = 0;
-      block.y = 0;
+      block.dropToArg(this);
       _child = block;
-
       _state.setState(() {
         width = block.width;
         height = block.topH;
       });
       //parentBlock?.refreshBlocks();
-    } else {
-      print("already has child block");
-    }
   }
 
   @override //remove
@@ -103,7 +95,7 @@ class _BlockArgState extends State<BlockArg> {
       return widget._child!;
     } else {
       return SizedBox(
-          width: (widget.width! < 30) ? 30 : widget.width,
+          width:30,
           height: (widget.height! < 20) ? 20 : widget.height,
           child: null);
     }
@@ -111,22 +103,17 @@ class _BlockArgState extends State<BlockArg> {
 
   @override
   Widget build(BuildContext context) {
-    return BlockSize(
-        child: Wrap(direction: Axis.horizontal, children: [
-          CustomPaint(
-              painter: DrawBlock(
-                  blockColor: (widget._trigger) ? Colors.red : widget.color!,
-                  type: _argType(widget.type!),
-                  width: (widget._child != null)?  widget.width! : 30 ,
-                  topH: (widget._child != null)? widget.height! : 20)),
-          Stack(children: [
-            const SizedBox(width: 30, height: 20, child: null),
-            getBlock()
-          ])
-        ]),
-        onChange: (size) {
-          widget.width = size.width;
-          widget.height = size.height;
-        });
+    return Wrap(direction: Axis.horizontal, children: [
+      CustomPaint(
+          painter: DrawBlock(
+              blockColor: (widget._trigger) ? Colors.red : widget.color!,
+              type: _argType(widget.type!),
+              width: 30,
+              topH: 20)),
+      Stack(children: [
+        const SizedBox(width: 30, height: 20, child: null),
+        getBlock()
+      ])
+    ]);
   }
 }

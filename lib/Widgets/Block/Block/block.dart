@@ -10,6 +10,7 @@ import 'package:flutter_application_1/Widgets/Block/block_base.dart';
 import 'package:flutter_application_1/Widgets/Block/Block/block_methods.dart';
 import 'package:flutter_application_1/Widgets/BlockUtils/block_size.dart';
 import 'package:flutter_application_1/Widgets/Block/draw_block.dart';
+import 'package:flutter_application_1/Widgets/Renderer/block_renderer.dart';
 import 'package:flutter_application_1/Widgets/drag_utils.dart';
 
 // ignore: must_be_immutable
@@ -112,44 +113,85 @@ class Block extends StatefulWidget implements BlockMethods {
 
   @override //places this next to 'block'
   void nextOf(Block block) {
+    this.getPrevious()?.setNext(null);
+    if (block.getNext() != null) {
+      Block? lastBlock = getLastBlock();
+      lastBlock.setNext(block.getNext()!);
+      block.getNext()?.setPrevious(lastBlock);
+      block.setNext(this);
+      this.setPrevious(block);
+      return;
+    }
     block.setNext(this);
+    this.setPrevious(block);
+    _depth = getPrevious()!.getDepth();
   }
 
   @override
-  void previousOf(Block block) {}
+  void previousOf(Block block) {
+    this.getPrevious()?.setNext(null);
+    if (block.getPrevious() == null) {
+      Block? lastBlock = getLastBlock();
+      lastBlock.setNext(block);
+      block.setPrevious(lastBlock);
+      _depth = 0;
+    }
+  }
 
   @override
   void toSubstackAOf(Block block) {
+    this.getPrevious()?.setNext(null);
+    if (block.subA != null) {
+      Block? lastBlock = getLastBlock();
+      lastBlock.setNext(block.subA);
+      block.subA?.setPrevious(lastBlock);
+      block.setSubstackA(this);
+      this.setPrevious(block);
+      return;
+    }
     block.subA = this;
-    _previous = block;
+    this.setPrevious(block);
+    _depth = block.getDepth() + 1;
   }
 
   @override
   void toSubstackBOf(Block block) {
+    this.getPrevious()?.setNext(null);
+    if (block.subB != null) {
+      Block? lastBlock = getLastBlock();
+      lastBlock.setNext(block.subB);
+      block.subB?.setPrevious(lastBlock);
+      block.setSubstackB(this);
+
+      this.setPrevious(block);
+      return;
+    }
     block.subB = this;
-    _previous = block;
+    this.getPrevious()?.setNext(null);
+    this.setPrevious(block);
+    _depth = block.getDepth() + 1;
   }
 
   @override
   void wrapBy(Block block) {}
 
   @override
-  void setNext(Block block) {
+  void setNext(Block? block) {
     _next = block;
   }
 
   @override
-  void setPrevious(Block block) {
+  void setPrevious(Block? block) {
     _previous = block;
   }
 
   @override
-  void setSubstackA(Block block) {
+  void setSubstackA(Block? block) {
     subA = block;
   }
 
   @override
-  void setSubstackB(Block block) {
+  void setSubstackB(Block? block) {
     subB = block;
   }
 
@@ -183,10 +225,15 @@ class Block extends StatefulWidget implements BlockMethods {
     if (_parent != null) {
       switch (_parent.runtimeType.toString()) {
         case "EditorPane":
-          (_parent as EditorPane).removeBlock(this);
+          if (!isFromPallette) {
+            (_parent as EditorPane).removeBlock(this);
+          }
           break;
+
         case "BlockArg":
+          print("removed arg");
           (_parent as BlockArg).removeBlock(this);
+
           break;
       }
     }
@@ -194,39 +241,32 @@ class Block extends StatefulWidget implements BlockMethods {
   }
 
   @override
-  void dropTo(Widget? parent, String? droptype) {
+  void dropTo(Widget? target, String? droptype) {
     remove();
-
-    switch (parent.runtimeType.toString()) {
-      case "Block":
-        if (this.isFromPallette) {
-          editor.editorPane.addBlock(this);
-        }
-
-        dropOverBlockInType(parent as Block, droptype!);
-        print("sjfksf");
-
-        break;
+    switch (target.runtimeType.toString()) {
       case "EditorPane":
-        _parent = parent;
-        setDepth(0);
-
-        (parent as EditorPane).addBlock(this);
-
+        _previous?.setNext(null);
+        _previous = null;
+        (target as EditorPane).addBlock(this);
         break;
+
+      case "Block":
+        editor.editorPane.addBlock(this);
+        dropOverBlockInType(target as Block, droptype);
+        break;
+
       case "BlockArg":
-        _parent = parent;
-        setDepth((parent as BlockArg).parentBlock!.getDepth() +
-            1); //increase the depth
-        (parent).addBlock(this);
+        (target as BlockArg).addBlock(this);
         break;
     }
   }
 
-  void setPositioned(bool pos) {
-    _state.setState(() {
-      isInEditor = pos;
-    });
+  @override
+  void dropToArg(BlockArg arg) {
+    isInEditor = false;
+    x = 0;
+    y = 0;
+    setParent(arg);
   }
 
   @override
@@ -287,7 +327,7 @@ class Block extends StatefulWidget implements BlockMethods {
       currentblock.recalculateBlock();
       x = currentblock.x!;
       y += currentblock.getTotalHeight();
-      currentblock = currentblock._next;
+      currentblock = currentblock.getNext();
     }
   }
 
@@ -353,7 +393,6 @@ class Block extends StatefulWidget implements BlockMethods {
   Block getLastBlock() {
     Block? currentBlock = this;
     while (true) {
-      print("jfk");
       if (currentBlock?._next == null) {
         break;
       }
@@ -499,10 +538,11 @@ class _BlockState extends State<Block> {
           if (isTriggered) {
             setState(() {
               widget.isVisible = (widget.isFromPallette) ? true : false;
-              widget.onDragStart!(widget);
               if (!widget.isFromPallette) {
                 widget.showChildren(false, widget.x!, widget.y!);
               }
+
+              widget.onDragStart!(widget);
             });
           }
         },
@@ -522,10 +562,11 @@ class _BlockState extends State<Block> {
           if (isTriggered) {
             setState(() {
               widget.isVisible = true;
-              widget.onDragEnd!(widget, pointer);
               if (!widget.isFromPallette) {
+                widget.showChildren(false, widget.x!, widget.y!);
                 widget.showChildren(true, widget.x!, widget.y!);
               }
+              widget.onDragEnd!(widget, pointer);
             });
           }
           isTriggered = false;

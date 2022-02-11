@@ -22,8 +22,8 @@ class DrawBlock extends CustomPainter {
 
   bool showEmboss;
 
-  Paint _embossL = Paint();
-  Paint _embossD = Paint();
+  final Paint _embossL = Paint();
+  final Paint _embossD = Paint();
 
   double embossIntensity = 0.5;
 

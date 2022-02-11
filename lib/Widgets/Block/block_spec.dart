@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_application_1/Widgets/Block/block.dart';
+import 'package:flutter_application_1/Widgets/Block/Block/block.dart';
 import 'package:flutter_application_1/Widgets/Block/block_args.dart';
-import 'package:flutter_application_1/Widgets/BlockUtils/block_size.dart';
 
 // ignore: must_be_immutable
 class BlockSpec extends StatefulWidget {

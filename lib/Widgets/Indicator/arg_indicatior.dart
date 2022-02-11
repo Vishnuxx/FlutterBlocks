@@ -3,9 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Widgets/Editor/editorpane.dart';
 import 'package:flutter_application_1/Widgets/Indicator/arg_indicator_methods.dart';
-import 'package:flutter_application_1/Widgets/Block/block.dart';
+import 'package:flutter_application_1/Widgets/Block/Block/block.dart';
 import 'package:flutter_application_1/Widgets/Block/block_args.dart';
 import 'package:flutter_application_1/Widgets/Block/draw_block.dart';
+import 'package:flutter_application_1/Widgets/drag_utils.dart';
 
 // ignore: must_be_immutable
 class ArgIndicator extends StatefulWidget implements ArgIndicatorMethods {
@@ -54,7 +55,7 @@ class ArgIndicator extends StatefulWidget implements ArgIndicatorMethods {
       box2 = (arg.key as GlobalKey).currentContext?.findRenderObject()
           as RenderBox;
       final size2 = box2.size;
-      final pos = EditorPane.toRelativeOffset(box2.localToGlobal(Offset.zero));
+      final pos = DragUtils.toRelativeOffset(box2.localToGlobal(Offset.zero));
       //print(pos);
       _state.setState(() {
         x = pos.dx;

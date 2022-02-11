@@ -7,10 +7,10 @@ import 'package:flutter_application_1/Widgets/Indicator/arg_indicatior.dart';
 import 'package:flutter_application_1/Widgets/Block/block_args.dart';
 import 'package:flutter_application_1/Widgets/Block/block_spec.dart';
 import 'package:flutter_application_1/Widgets/Block/block_base.dart';
-import 'package:flutter_application_1/Widgets/Block/block_methods.dart';
+import 'package:flutter_application_1/Widgets/Block/Block/block_methods.dart';
 import 'package:flutter_application_1/Widgets/BlockUtils/block_size.dart';
 import 'package:flutter_application_1/Widgets/Block/draw_block.dart';
-import 'package:flutter_application_1/Widgets/BlockUtils/droppable_regions.dart';
+import 'package:flutter_application_1/Widgets/drag_utils.dart';
 
 // ignore: must_be_immutable
 class Block extends StatefulWidget implements BlockMethods {
@@ -112,8 +112,7 @@ class Block extends StatefulWidget implements BlockMethods {
 
   @override //places this next to 'block'
   void nextOf(Block block) {
-    block._next = this;
-    _previous = block;
+    block.setNext(this);
   }
 
   @override
@@ -133,6 +132,26 @@ class Block extends StatefulWidget implements BlockMethods {
 
   @override
   void wrapBy(Block block) {}
+
+  @override
+  void setNext(Block block) {
+    _next = block;
+  }
+
+  @override
+  void setPrevious(Block block) {
+    _previous = block;
+  }
+
+  @override
+  void setSubstackA(Block block) {
+    subA = block;
+  }
+
+  @override
+  void setSubstackB(Block block) {
+    subB = block;
+  }
 
   void dropOverBlockInType(Block dropArea, String? type) {
     switch (type) {
@@ -180,7 +199,10 @@ class Block extends StatefulWidget implements BlockMethods {
 
     switch (parent.runtimeType.toString()) {
       case "Block":
-        editor.editorPane.addBlock(this);
+        if (this.isFromPallette) {
+          editor.editorPane.addBlock(this);
+        }
+
         dropOverBlockInType(parent as Block, droptype!);
         print("sjfksf");
 
@@ -196,7 +218,7 @@ class Block extends StatefulWidget implements BlockMethods {
         _parent = parent;
         setDepth((parent as BlockArg).parentBlock!.getDepth() +
             1); //increase the depth
-        (parent as BlockArg).addBlock(this);
+        (parent).addBlock(this);
         break;
     }
   }
@@ -233,9 +255,8 @@ class Block extends StatefulWidget implements BlockMethods {
     Block? currentblock = this;
     double x = _x;
     double y = _y;
-    while (true) {
-      print("showChildren");
-      currentblock!.isVisible = show;
+    while (currentblock != null) {
+      currentblock.isVisible = show;
       currentblock.x = x;
       currentblock.y = y;
       switch (currentblock.type) {
@@ -267,7 +288,6 @@ class Block extends StatefulWidget implements BlockMethods {
       x = currentblock.x!;
       y += currentblock.getTotalHeight();
       currentblock = currentblock._next;
-       if (currentblock == null) break;
     }
   }
 
@@ -416,7 +436,7 @@ class Block extends StatefulWidget implements BlockMethods {
     BlockArg? target;
     for (Widget arg in _blockSpec.params) {
       if (arg is BlockArg) {
-        if (EditorPane.isHitting(arg, location)) {
+        if (DragUtils.isHitting(arg, location)) {
           if ((arg).hasChildBlock()) {
             target = ((arg).getChildBlock()!.getArgAtLocation(location) != null)
                 ? (arg).getChildBlock()!.getArgAtLocation(location)
@@ -481,7 +501,7 @@ class _BlockState extends State<Block> {
               widget.isVisible = (widget.isFromPallette) ? true : false;
               widget.onDragStart!(widget);
               if (!widget.isFromPallette) {
-               widget.showChildren(false, widget.x!, widget.y!);
+                widget.showChildren(false, widget.x!, widget.y!);
               }
             });
           }
@@ -489,7 +509,7 @@ class _BlockState extends State<Block> {
         onDragUpdate: (details) {
           setState(() {
             if (isTriggered) {
-              pointer = EditorPane.toRelativeOffset(Offset(
+              pointer = DragUtils.toRelativeOffset(Offset(
                   details.globalPosition.dx - widget.offsetX,
                   details.globalPosition.dy - widget.offsetY));
               widget.x = pointer.dx;
@@ -512,11 +532,11 @@ class _BlockState extends State<Block> {
         },
         child: GestureDetector(
           onTapDown: (details) {
-           // setState(() {
-              widget.offsetX = details.localPosition.dx;
-              widget.offsetY = details.localPosition.dy;
-              isTriggered = true;
-           // });
+            // setState(() {
+            widget.offsetX = details.localPosition.dx;
+            widget.offsetY = details.localPosition.dy;
+            isTriggered = true;
+            // });
           },
           child: Stack(
             children: [

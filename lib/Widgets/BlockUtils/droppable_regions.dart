@@ -1,4 +1,4 @@
-import 'package:flutter_application_1/Widgets/Block/block.dart';
+import 'package:flutter_application_1/Widgets/Block/Block/block.dart';
 
 abstract class DroppableRegion {
   void addBlock(Block block);

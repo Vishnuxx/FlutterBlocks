@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Widgets/Indicator/arg_indicatior.dart';
-import 'package:flutter_application_1/Widgets/Block/block.dart';
+import 'package:flutter_application_1/Widgets/Block/Block/block.dart';
 import 'package:flutter_application_1/Widgets/Block/block_args.dart';
 
 abstract class BlockMethods {
@@ -19,6 +19,11 @@ abstract class BlockMethods {
   void toSubstackAOf(Block block);
   void toSubstackBOf(Block block);
   void wrapBy(Block block);
+
+  void setNext(Block block);
+  void setPrevious(Block block);
+  void setSubstackA(Block block);
+  void setSubstackB(Block block);
 
   Block? getNext();
   Block? getPrevious();

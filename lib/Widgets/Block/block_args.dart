@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_application_1/Widgets/Editor/editorpane.dart';
-import 'package:flutter_application_1/Widgets/Block/block.dart';
+import 'package:flutter_application_1/Widgets/Block/Block/block.dart';
 import 'package:flutter_application_1/Widgets/BlockUtils/block_size.dart';
 import 'package:flutter_application_1/Widgets/Block/draw_block.dart';
 import 'package:flutter_application_1/Widgets/BlockUtils/droppable_regions.dart';
+import 'package:flutter_application_1/Widgets/drag_utils.dart';
 
 // ignore: must_be_immutable
 class BlockArg extends StatefulWidget implements DroppableRegion {
@@ -30,7 +30,7 @@ class BlockArg extends StatefulWidget implements DroppableRegion {
     RenderBox box2 =
         (key as GlobalKey).currentContext?.findRenderObject() as RenderBox;
     Rect draggingPos = Rect.fromLTWH(coordinate.dx, coordinate.dy, 30, 20);
-    final pos = EditorPane.toRelativeOffset(box2.localToGlobal(Offset.zero));
+    final pos = DragUtils.toRelativeOffset(box2.localToGlobal(Offset.zero));
     Rect droppingPos = Rect.fromLTWH(pos.dx, pos.dy, 30, 20);
 
     return droppingPos.overlaps(draggingPos);
@@ -120,7 +120,7 @@ class _BlockArgState extends State<BlockArg> {
                   width: (widget._child != null)?  widget.width! : 30 ,
                   topH: (widget._child != null)? widget.height! : 20)),
           Stack(children: [
-            SizedBox(width: 30, height: 20, child: null),
+            const SizedBox(width: 30, height: 20, child: null),
             getBlock()
           ])
         ]),

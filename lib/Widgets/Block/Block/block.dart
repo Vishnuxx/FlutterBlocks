@@ -134,13 +134,25 @@ class Block extends StatefulWidget implements BlockMethods {
       Block? lastBlock = getLastBlock();
       lastBlock.setNext(block);
       block.setPrevious(lastBlock);
-      _depth = 0;
+      // _depth = 0;
     }
   }
 
   @override
   void toSubstackAOf(Block block) {
-    this.getPrevious()?.setNext(null);
+    if (_previous != null) {
+      if (_previous!.isBranchedBlock()) {
+        if (_previous!.subA == this) {
+          this.getPrevious()?.setSubstackA(null);
+        } else if (_previous!.subB == this) {
+          this.getPrevious()?.setSubstackB(null);
+        }
+      }
+      if (_previous!.getNext() == this) {
+        this.getPrevious()?.setNext(null);
+      }
+    }
+
     if (block.subA != null) {
       Block? lastBlock = getLastBlock();
       lastBlock.setNext(block.subA);
@@ -156,7 +168,18 @@ class Block extends StatefulWidget implements BlockMethods {
 
   @override
   void toSubstackBOf(Block block) {
-    this.getPrevious()?.setNext(null);
+    if (_previous != null) {
+      if (_previous!.isBranchedBlock()) {
+        if (_previous!.subA == this) {
+          this.getPrevious()?.setSubstackA(null);
+        } else if (_previous!.subB == this) {
+          this.getPrevious()?.setSubstackB(null);
+        }
+      }
+      if (_previous!.getNext() == this) {
+        this.getPrevious()?.setNext(null);
+      }
+    }
     if (block.subB != null) {
       Block? lastBlock = getLastBlock();
       lastBlock.setNext(block.subB);
@@ -188,34 +211,53 @@ class Block extends StatefulWidget implements BlockMethods {
   @override
   void setSubstackA(Block? block) {
     subA = block;
+    if (block == null) {
+      subAH = 20;
+    }
   }
 
   @override
   void setSubstackB(Block? block) {
     subB = block;
+    if (block == null) {
+      subBH = 20;
+    }
   }
 
-  void dropOverBlockInType(Block dropArea, String? type) {
-    switch (type) {
-      case "NEXT":
-        nextOf(dropArea);
-        print("next");
+  @override
+  void setSubstackAHeight(double height) {
+    _state.setState(() {
+      subAH = height;
+    });
+  }
+
+  @override
+  void setSubstackBHeight(double height) {
+    // ignore: invalid_use_of_protected_member
+    _state.setState(() {
+      subBH = height;
+    });
+  }
+
+  void _removeFromBlock(Block? parent) {
+    if (parent == null) return;
+    String from = "";
+    if (parent.getNext() == this) from = "next";
+    if (parent.subA == this) from = "subA";
+    if (parent.subB == this) from = "subB";
+
+    switch (from) {
+      case "subA":
+        parent.setSubstackA(null);
+        setPrevious(null);
         break;
-      case "PREVIOUS":
-        previousOf(dropArea);
-        print("prev");
+      case "subB":
+        parent.setSubstackB(null);
+        setPrevious(null);
         break;
-      case "SUBA":
-        toSubstackAOf(dropArea);
-        print("suba");
-        break;
-      case "SUBB":
-        toSubstackBOf(dropArea);
-        print("subb");
-        break;
-      case "PARENT":
-        wrapBy(dropArea);
-        print("parent");
+      case "next":
+        parent.setNext(null);
+        parent.setPrevious(null);
         break;
     }
   }
@@ -226,18 +268,42 @@ class Block extends StatefulWidget implements BlockMethods {
       switch (_parent.runtimeType.toString()) {
         case "EditorPane":
           if (!isFromPallette) {
-            (_parent as EditorPane).removeBlock(this);
+            final pane = (_parent as EditorPane);
+            pane.removeBlock(this);
+            _removeFromBlock(_previous);
           }
           break;
 
         case "BlockArg":
-          print("removed arg");
           (_parent as BlockArg).removeBlock(this);
 
           break;
       }
     }
     _depth = 0;
+  }
+
+  void dropOverBlockInType(Block dropArea, String? type) {
+    switch (type) {
+      case "NEXT":
+        nextOf(dropArea);
+        break;
+      case "PREVIOUS":
+        previousOf(dropArea);
+
+        break;
+      case "SUBA":
+        toSubstackAOf(dropArea);
+
+        break;
+      case "SUBB":
+        toSubstackBOf(dropArea);
+
+        break;
+      case "PARENT":
+        wrapBy(dropArea);
+        break;
+    }
   }
 
   @override
@@ -251,12 +317,13 @@ class Block extends StatefulWidget implements BlockMethods {
         break;
 
       case "Block":
-        editor.editorPane.addBlock(this);
         dropOverBlockInType(target as Block, droptype);
+        editor.editorPane.addBlock(this);
         break;
 
       case "BlockArg":
         (target as BlockArg).addBlock(this);
+
         break;
     }
   }
@@ -267,16 +334,17 @@ class Block extends StatefulWidget implements BlockMethods {
     x = 0;
     y = 0;
     setParent(arg);
+    arg.parentBlock?.recalculateBlock();
   }
 
   @override
   void recalculateBlock() {
+    // ignore: invalid_use_of_protected_member
     _state.setState(() {
       x = x;
       y = y;
-      topH = topH;
+      topH = _blockSpec.height;
       width = _blockSpec.width;
-      // _base.width = _blockSpec.width;
       subAH = subAH;
       subBH = subBH;
     });
@@ -284,7 +352,7 @@ class Block extends StatefulWidget implements BlockMethods {
 
   @override
   void refreshBlocks() {
-    if (_parent != null && !(_parent is EditorPane)) {
+    if (_parent != null && _parent is! EditorPane) {
       recalculateBlock();
       (_parent as BlockArg).parentBlock?.recalculateBlock();
     }
@@ -406,25 +474,35 @@ class Block extends StatefulWidget implements BlockMethods {
     Block currentBlock = this;
     if (isArgBlock()) {
       while (true) {
-        if (currentBlock._parent == EditorPane) {
+        print("traversed Arg");
+        if (currentBlock.getParent() is EditorPane) {
           break;
         }
-        currentBlock.recalculateBlock();
-        currentBlock = (currentBlock._parent as BlockArg).parentBlock!;
+        currentBlock = (currentBlock.getParent() as BlockArg).parentBlock!;
+        // currentBlock.recalculateBlock();
       }
     }
-    int depth = _depth;
-    while (currentBlock._previous != null) {
-      if (currentBlock == currentBlock._previous?.subA ||
-          currentBlock == currentBlock._previous?.subB) {
-        if (depth > 0) {
+    int depth = currentBlock.getDepth();
+    while (currentBlock != null) {
+      if (currentBlock.getPrevious() != null) {
+        final prevSubA = currentBlock.getPrevious()?.subA;
+        final prevSubB = currentBlock.getPrevious()?.subB;
+
+        if (currentBlock == prevSubA || currentBlock == prevSubB) {
           depth--;
-        } else {
-          break;
+          if (depth < 0) {
+            //break;
+          }
+          
+            print("traversed");
+          
         }
+        currentBlock = currentBlock._previous!;
+      } else {
+        break;
       }
-      currentBlock = currentBlock._previous!;
     }
+    // currentBlock.recalculateBlock();
     return currentBlock;
   }
 
@@ -538,10 +616,6 @@ class _BlockState extends State<Block> {
           if (isTriggered) {
             setState(() {
               widget.isVisible = (widget.isFromPallette) ? true : false;
-              if (!widget.isFromPallette) {
-                widget.showChildren(false, widget.x!, widget.y!);
-              }
-
               widget.onDragStart!(widget);
             });
           }
@@ -562,10 +636,7 @@ class _BlockState extends State<Block> {
           if (isTriggered) {
             setState(() {
               widget.isVisible = true;
-              if (!widget.isFromPallette) {
-                widget.showChildren(false, widget.x!, widget.y!);
-                widget.showChildren(true, widget.x!, widget.y!);
-              }
+
               widget.onDragEnd!(widget, pointer);
             });
           }
@@ -589,15 +660,7 @@ class _BlockState extends State<Block> {
                       widget.width = size.width;
                     });
                   },
-                  child: BlockSize(
-                    child: widget._blockSpec,
-                    onChange: (size) {
-                      setState(() {
-                        widget.width = widget.width;
-                        widget.topH = size.height;
-                      });
-                    },
-                  )),
+                  child: widget._blockSpec),
             ],
           ),
         ),
@@ -611,6 +674,7 @@ class _BlockState extends State<Block> {
       setState(() {
         widget.isInEditor = widget.isInEditor;
         widget._base.width = widget._blockSpec.width;
+        widget.topH = widget._blockSpec.height;
       });
     });
     widget._base = Base(

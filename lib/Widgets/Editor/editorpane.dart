@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Widgets/Editor/editorpane_Utils.dart';
 import 'package:flutter_application_1/Widgets/Block/Block/block.dart';
-import 'package:flutter_application_1/Widgets/Block/draw_block.dart';
 import 'package:flutter_application_1/Widgets/BlockUtils/droppable_regions.dart';
 
 // ignore: must_be_immutable
@@ -29,10 +28,12 @@ class EditorPane extends StatefulWidget implements DroppableRegion {
   void addBlock(Block block) {
     print("add Block");
     // ignore: invalid_use_of_protected_member
+     paneUtils.blocks.add(block);
     _state.setState(() {
       block.isInEditor = true;
       block.setParent(this);
-      paneUtils.blocks.add(block);
+      paneUtils.blocks;
+      
     });
   }
 

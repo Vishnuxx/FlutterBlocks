@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Widgets/Block/Block/block.dart';
 import 'package:flutter_application_1/Widgets/Block/draw_block.dart';
 
@@ -18,8 +19,14 @@ class BlockRenderer {
     double totalHeight = 0;
 
     while (currenblock != null) {
+      if (currenblock == null) {
+        break;
+      }
+     
       currenblock.x = x;
       currenblock.y = y;
+      currenblock.subAH = 10;
+      currenblock.subBH = 10;
       switch (currenblock.type) {
         case "e":
           //totalHeight += currenblock.topH;
@@ -28,8 +35,7 @@ class BlockRenderer {
                 currenblock.subA!,
                 currenblock.x! + DrawBlock.SUBSTACK_INSET,
                 currenblock.y! + currenblock.topH);
-            //totalHeight += subAHeight;
-            currenblock.subAH = subAHeight - DrawBlock.EDGE_INSET;
+            currenblock.setSubstackAHeight(subAHeight - DrawBlock.EDGE_INSET);
           }
           if (currenblock.hasChildInSubstackB()) {
             double subBHeight = renderBlock(
@@ -37,7 +43,7 @@ class BlockRenderer {
                 currenblock.x! + (DrawBlock.SUBSTACK_INSET),
                 currenblock.y! + currenblock.topH + currenblock.subAH + 19);
             //totalHeight += subBHeight;
-            currenblock.subBH = subBHeight - DrawBlock.EDGE_INSET;
+            currenblock.setSubstackBHeight(subBHeight - DrawBlock.EDGE_INSET);
           }
           currenblock.recalculateBlock();
           break;
@@ -50,23 +56,21 @@ class BlockRenderer {
                 currenblock.x! + DrawBlock.SUBSTACK_INSET,
                 currenblock.y! + currenblock.topH);
             //totalHeight += subAHeight;
-            currenblock.subAH = subAHeight - DrawBlock.EDGE_INSET;
+            currenblock.setSubstackAHeight(subAHeight - DrawBlock.EDGE_INSET);
             currenblock.recalculateBlock();
           }
       }
-      currenblock.isVisible = true;
-      currenblock.getPrevious()?.recalculateBlock();
+
+      //currenblock.isVisible = true;
+      // currenblock.getPrevious()?.recalculateBlock();
       totalHeight += currenblock.getTotalHeight();
       currenblock.recalculateBlock();
       y = currenblock.nextBlockY();
       currenblock = currenblock.getNext();
     }
-    node.recalculateBlock();
+    // node.recalculateBlock();
     return totalHeight;
   }
 
-
-  void updateChildren() {
-
-  }
+  void updateChildren() {}
 }

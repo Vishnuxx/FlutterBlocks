@@ -25,7 +25,7 @@ List<Widget> generateParams() {
             key: GlobalKey(),
             parentBlock: block,
             type: token[1],
-            height: 20,
+            height: 10,
             width: 35));
       } else {
         params.add(Padding(

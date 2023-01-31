@@ -14,6 +14,9 @@ abstract class BlockMethods {
 
   //Block getAncestorBlock();
 
+  void setSubstackAHeight(double height);
+  void setSubstackBHeight(double height);
+
   void setParent(Widget? parent);
   void nextOf(Block block);
   void previousOf(Block block);

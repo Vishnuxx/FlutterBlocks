@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Widgets/Editor/editorpane.dart';
 import 'package:flutter_application_1/Widgets/Block/Block/block.dart';
 import 'package:flutter_application_1/Widgets/BlockUtils/block_size.dart';
 import 'package:flutter_application_1/Widgets/Block/draw_block.dart';
@@ -8,6 +7,8 @@ import 'package:flutter_application_1/Widgets/drag_utils.dart';
 
 // ignore: must_be_immutable
 class BlockArg extends StatefulWidget implements DroppableRegion {
+  static const double h = 20;
+  static const double w = 35;
   final _BlockArgState _state = _BlockArgState();
   Color? color = Colors.black26;
   Block? _child;
@@ -21,8 +22,8 @@ class BlockArg extends StatefulWidget implements DroppableRegion {
   BlockArg(
       {Key? key,
       this.type = "s",
-      this.width = 30,
-      this.height = 20,
+      this.width = BlockArg.w,
+      this.height = BlockArg.h,
       this.parentBlock})
       : super(key: key);
 
@@ -38,13 +39,13 @@ class BlockArg extends StatefulWidget implements DroppableRegion {
 
   @override //add
   void addBlock(Block block) {
-      block.dropToArg(this);
-      _child = block;
-      _state.setState(() {
-        width = block.width;
-        height = block.topH;
-      });
-      //parentBlock?.refreshBlocks();
+    block.dropToArg(this);
+    _child = block;
+    _state.setState(() {
+      width = block.width;
+      height = block.topH;
+    });
+    //parentBlock?.refreshBlocks();
   }
 
   @override //remove
@@ -52,8 +53,8 @@ class BlockArg extends StatefulWidget implements DroppableRegion {
     // ignore: invalid_use_of_protected_member
     _state.setState(() {
       _child = null;
-      width = 30;
-      height = 20;
+      width = BlockArg.w;
+      height = BlockArg.h;
     });
   }
 
@@ -95,8 +96,8 @@ class _BlockArgState extends State<BlockArg> {
       return widget._child!;
     } else {
       return SizedBox(
-          width:30,
-          height: (widget.height! < 20) ? 20 : widget.height,
+          width: BlockArg.w,
+          height: (widget.height! < BlockArg.h) ? BlockArg.h : widget.height,
           child: null);
     }
   }
@@ -108,10 +109,10 @@ class _BlockArgState extends State<BlockArg> {
           painter: DrawBlock(
               blockColor: (widget._trigger) ? Colors.red : widget.color!,
               type: _argType(widget.type!),
-              width: 30,
-              topH: 20)),
+              width: BlockArg.w,
+              topH: BlockArg.h)),
       Stack(children: [
-        const SizedBox(width: 30, height: 20, child: null),
+        const SizedBox(width: BlockArg.w, height: BlockArg.h, child: null),
         getBlock()
       ])
     ]);
